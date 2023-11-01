@@ -1,0 +1,4 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://admin-test:qwedsa123@cluster1.883q1ed.mongodb.net/storebuilder-dev?retryWrites=true&w=majority
