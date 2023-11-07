@@ -1,4 +1,4 @@
-package com.shalomsam.storebuilder.domain;
+package com.shalomsam.storebuilder.domain.shop;
 
 import lombok.Getter;
 

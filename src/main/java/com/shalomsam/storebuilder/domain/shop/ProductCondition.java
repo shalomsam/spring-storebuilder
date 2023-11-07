@@ -1,8 +1,6 @@
-package com.shalomsam.storebuilder.domain;
+package com.shalomsam.storebuilder.domain.shop;
 
 import lombok.Getter;
-
-import java.awt.*;
 
 @Getter
 public enum ProductCondition {

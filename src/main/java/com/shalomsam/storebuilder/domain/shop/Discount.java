@@ -1,6 +1,7 @@
-package com.shalomsam.storebuilder.domain;
+package com.shalomsam.storebuilder.domain.shop;
 
 import com.mongodb.lang.Nullable;
+import com.shalomsam.storebuilder.domain.AuditMetadata;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

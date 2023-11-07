@@ -1,5 +1,6 @@
-package com.shalomsam.storebuilder.domain;
+package com.shalomsam.storebuilder.domain.shop;
 
+import com.shalomsam.storebuilder.domain.*;
 import com.shalomsam.storebuilder.domain.user.Address;
 import com.shalomsam.storebuilder.domain.user.Customer;
 import lombok.AllArgsConstructor;
@@ -31,7 +32,6 @@ public class Order {
 
     private OrderStatus orderStatus;
 
-    @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_EMPTY)
     private List<CartItem> cartItems;
 
     @Field(targetType = FieldType.DECIMAL128)

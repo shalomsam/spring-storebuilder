@@ -24,5 +24,7 @@ public class Card extends PaymentMethod {
 
     private String fingerprint;
 
+    private PaymentMethodType paymentMethodType = PaymentMethodType.CARD;
+
     private String country;
 }

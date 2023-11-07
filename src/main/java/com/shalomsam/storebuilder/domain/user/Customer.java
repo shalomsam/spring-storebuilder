@@ -1,11 +1,10 @@
 package com.shalomsam.storebuilder.domain.user;
 
-import com.shalomsam.storebuilder.domain.Order;
-import com.shalomsam.storebuilder.domain.Review;
-import com.shalomsam.storebuilder.domain.Transaction;
+import com.shalomsam.storebuilder.domain.shop.Order;
+import com.shalomsam.storebuilder.domain.shop.Review;
+import com.shalomsam.storebuilder.domain.shop.Transaction;
 import com.shalomsam.storebuilder.domain.paymentmethods.PaymentMethod;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;

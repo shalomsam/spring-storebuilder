@@ -1,5 +1,6 @@
-package com.shalomsam.storebuilder.domain;
+package com.shalomsam.storebuilder.domain.shop;
 
+import com.shalomsam.storebuilder.domain.AuditMetadata;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +10,6 @@ import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 
 @Data
@@ -37,7 +37,9 @@ public class ProductVariant {
     @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal price;
 
-    private int stock;
+    @Field("inventoryIds")
+    @DocumentReference(lazy = true)
+    private List<Inventory> inventoryList;
 
     @ReadOnlyProperty
     @Field("discountIds")

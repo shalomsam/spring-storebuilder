@@ -1,5 +1,6 @@
 package com.shalomsam.storebuilder.domain;
 
+import com.shalomsam.storebuilder.domain.user.ContactInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -1,13 +1,17 @@
-package com.shalomsam.storebuilder.domain;
+package com.shalomsam.storebuilder.domain.shop;
 
 import com.mongodb.lang.Nullable;
+import com.shalomsam.storebuilder.domain.AuditMetadata;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.*;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -25,10 +29,13 @@ public class Product {
     @Nullable
     private String upc;
 
+    @TextIndexed
     private String title;
 
+    @TextIndexed
     private String description;
 
+    @Indexed
     private String brandName;
 
     @Indexed
@@ -37,9 +44,9 @@ public class Product {
     @Indexed
     private String category;
 
-    @Field("productVariantId")
+    @Field("productVariantIds")
     @DocumentReference
-    private ProductVariant productVariant;
+    private List<ProductVariant> productVariants;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

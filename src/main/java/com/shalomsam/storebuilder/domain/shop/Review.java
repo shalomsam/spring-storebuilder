@@ -1,32 +1,38 @@
-package com.shalomsam.storebuilder.domain.paymentmethods;
+package com.shalomsam.storebuilder.domain.shop;
 
 import com.shalomsam.storebuilder.domain.AuditMetadata;
 import com.shalomsam.storebuilder.domain.user.Customer;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
-import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.data.mongodb.core.mapping.MongoId;
-import org.springframework.data.mongodb.core.mapping.Unwrapped;
+import org.springframework.data.mongodb.core.mapping.*;
 
 @Data
-@SuperBuilder
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PaymentMethod {
+@Document
+public class Review {
     @MongoId
     private ObjectId id;
+
+    private String sku;
+
+    @Field("productId")
+    @DocumentReference
+    private Product product;
 
     @Field("customerId")
     @DocumentReference
     private Customer customer;
 
-    private String nameOnCard;
+    private float rating;
 
-    private PaymentMethodType type;
+    private String title;
+
+    private String description;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

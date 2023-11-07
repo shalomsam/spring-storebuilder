@@ -1,6 +1,6 @@
-package com.shalomsam.storebuilder.domain;
+package com.shalomsam.storebuilder.domain.shop;
 
-import com.shalomsam.storebuilder.domain.paymentmethods.PaymentMethod;
+import com.shalomsam.storebuilder.domain.AuditMetadata;
 import com.shalomsam.storebuilder.domain.user.Customer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,14 +9,14 @@ import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.*;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Document
-public class Transaction {
+public class Cart {
     @MongoId
     private ObjectId id;
 
@@ -24,16 +24,9 @@ public class Transaction {
     @DocumentReference
     private Customer customer;
 
-    @Field("orderId")
-    @DocumentReference
-    private Order order;
+    private CartStatus cartStatus;
 
-    @Field("paymentMethodId")
-    @DocumentReference
-    private PaymentMethod paymentMethod;
-
-    @Field(targetType = FieldType.DECIMAL128)
-    private BigDecimal amount;
+    private List<CartItem> cartItems;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

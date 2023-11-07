@@ -1,6 +1,7 @@
-package com.shalomsam.storebuilder.domain;
+package com.shalomsam.storebuilder.domain.shop;
 
-import com.shalomsam.storebuilder.domain.user.Customer;
+import com.shalomsam.storebuilder.domain.AuditMetadata;
+import com.shalomsam.storebuilder.domain.Organization;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,25 +14,21 @@ import org.springframework.data.mongodb.core.mapping.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Document
-public class Review {
+public class Seller {
     @MongoId
     private ObjectId id;
 
-    private String sku;
-
-    @Field("productId")
+    @Field("organizationId")
     @DocumentReference
-    private Product product;
+    private Organization organization;
 
-    @Field("customerId")
-    @DocumentReference
-    private Customer customer;
+    private String name;
 
-    private float rating;
+    private String shopSubDomain;
 
-    private String title;
+    private SellerType sellerType;
 
-    private String description;
+    private boolean isOnline;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;
