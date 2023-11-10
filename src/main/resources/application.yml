@@ -1,4 +1,15 @@
 spring:
+  application:
+    name: storebuilder
   data:
     mongodb:
-      uri: mongodb+srv://admin-test:qwedsa123@cluster1.883q1ed.mongodb.net/storebuilder-dev?retryWrites=true&w=majority
+      uri: mongodb+srv://<username>:<password>@<domain>/<database>?retryWrites=true&w=majority
+  cloud:
+    vault:
+      host: localhost
+      port: 8200
+      authentication: TOKEN
+      token: "hvs.0Oz9PNtrorEm6IcmJTWgUd01"
+      scheme: http
+  config:
+    import: vault://
