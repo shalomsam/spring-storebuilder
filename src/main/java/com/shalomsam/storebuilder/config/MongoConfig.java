@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 @Configuration
-@EnableReactiveMongoRepositories
+@EnableReactiveMongoRepositories(basePackages = { "com.shalomsam.storebuilder.repository" })
 @EnableReactiveMongoAuditing(dateTimeProviderRef = "auditingDateTimeProvider")
 public class MongoConfig {
 

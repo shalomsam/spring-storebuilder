@@ -1,3 +1,5 @@
+server:
+  port: 8081
 spring:
   application:
     name: storebuilder
@@ -9,7 +11,7 @@ spring:
       host: localhost
       port: 8200
       authentication: TOKEN
-      token: "hvs.0Oz9PNtrorEm6IcmJTWgUd01"
+      token: "hvs.DpW7tWuNGWGNPPL99o8rfzYx"
       scheme: http
   config:
     import: vault://

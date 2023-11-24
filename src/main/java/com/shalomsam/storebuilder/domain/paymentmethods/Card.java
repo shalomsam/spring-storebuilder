@@ -3,6 +3,7 @@ package com.shalomsam.storebuilder.domain.paymentmethods;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -23,8 +24,6 @@ public class Card extends PaymentMethod {
     private int expYear;
 
     private String fingerprint;
-
-    private PaymentMethodType paymentMethodType = PaymentMethodType.CARD;
 
     private String country;
 }

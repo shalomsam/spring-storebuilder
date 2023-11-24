@@ -26,7 +26,8 @@ public class PaymentMethod {
 
     private String nameOnCard;
 
-    private PaymentMethodType type;
+    @Field("paymentMethodType")
+    private String paymentMethodType;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;
