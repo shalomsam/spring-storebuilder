@@ -20,6 +20,8 @@ public class Address {
 
     private String unit;
 
+    private String buildingNumber;
+
     private String street;
 
     private String city;

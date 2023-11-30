@@ -1,6 +1,4 @@
 package com.shalomsam.storebuilder.service;
-
-import com.shalomsam.storebuilder.domain.Organization;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

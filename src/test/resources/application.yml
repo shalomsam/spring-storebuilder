@@ -1,0 +1,3 @@
+mocks:
+  stubsDirectoryPath: "/src/test/resources/stubs"
+  shouldWriteMockDataToFile: true

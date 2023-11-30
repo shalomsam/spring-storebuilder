@@ -18,6 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -38,11 +39,9 @@ public class OrganizationHandler {
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(
-                    SuccessResponseDto
-                        .builder()
+                    new SuccessResponseDto<List<Organization>>()
+                        .addData("organizations", organizations)
                         .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
-                        .data("organization", organizations)
-                        .build()
                 );
         });
     }
@@ -55,10 +54,21 @@ public class OrganizationHandler {
                 ServerResponse
                     .ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(organization)
+                    .bodyValue(
+                        new SuccessResponseDto<Organization>()
+                            .addData("organization", organization)
+                            .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
+                    )
             )
             .switchIfEmpty(
-                ServerResponse.notFound().build()
+                ServerResponse
+                    .status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(
+                        new ErrorResponseDto()
+                                .setMessage(HttpStatus.NOT_FOUND.getReasonPhrase())
+                                .status(ApiResponse.ApiResponseType.ERROR.getValue())
+                    )
             );
     }
 
@@ -70,7 +80,13 @@ public class OrganizationHandler {
             .doOnSuccess(organization -> log.info("New Organization created/saved: {}", organization.getId()))
             .doOnError(e -> {
                 log.error("Failed to create new organization record: message={}", e.getMessage());
-                ServerResponse.status(HttpStatusCode.valueOf(500)).bodyValue(e.getMessage());
+                ServerResponse
+                    .status(HttpStatusCode.valueOf(500))
+                    .bodyValue(
+                        new ErrorResponseDto()
+                            .status(ApiResponse.ApiResponseType.ERROR.getValue())
+                            .setMessage(e.getMessage())
+                    );
             })
             .flatMap(organization ->
                 ServerResponse.created(
@@ -79,7 +95,11 @@ public class OrganizationHandler {
                         .buildAndExpand(organization.getId())
                         .toUri()
                 )
-                .bodyValue(organization)
+                .bodyValue(
+                    new SuccessResponseDto<Organization>()
+                        .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
+                        .addData("organization", organization)
+                )
             );
 
     }
@@ -93,11 +113,20 @@ public class OrganizationHandler {
                 ServerResponse
                     .ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(organization)
+                    .bodyValue(
+                        new SuccessResponseDto<Organization>()
+                            .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
+                            .addData("organization", organization)
+                    )
                     .switchIfEmpty(
                         ServerResponse
-                            .notFound()
-                            .build()
+                            .status(HttpStatus.NOT_FOUND)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(
+                                new ErrorResponseDto()
+                                    .setMessage(HttpStatus.NOT_FOUND.getReasonPhrase())
+                                    .status(ApiResponse.ApiResponseType.ERROR.getValue())
+                            )
                     )
             );
     }
@@ -118,7 +147,14 @@ public class OrganizationHandler {
                     )
             )
             .switchIfEmpty(
-                ServerResponse.notFound().build()
+                ServerResponse
+                    .status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(
+                        new ErrorResponseDto()
+                            .setMessage(HttpStatus.NOT_FOUND.getReasonPhrase())
+                            .status(ApiResponse.ApiResponseType.ERROR.getValue())
+                    )
             );
     }
 }

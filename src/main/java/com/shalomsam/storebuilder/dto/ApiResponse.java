@@ -1,15 +1,16 @@
 package com.shalomsam.storebuilder.dto;
 
-import lombok.*;
-import lombok.experimental.SuperBuilder;
-
-import java.io.Serializable;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Data
-@SuperBuilder(builderMethodName = "baseBuilder")
+@NoArgsConstructor
+@AllArgsConstructor
 public class ApiResponse {
     @Getter
-    public static enum ApiResponseType {
+    public enum ApiResponseType {
         SUCCESS("success"),
         ERROR("error");
 
@@ -20,5 +21,6 @@ public class ApiResponse {
         }
     }
 
-    private final String status;
+    private String status;
+
 }
