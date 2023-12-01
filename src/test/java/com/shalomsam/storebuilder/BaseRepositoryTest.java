@@ -35,6 +35,8 @@ import java.util.List;
 @Testcontainers
 public class BaseRepositoryTest {
 
+    public static int MONGO_PORT = 27017;
+
     @Autowired
     private OrganizationRepository organizationRepository;
 
@@ -44,7 +46,7 @@ public class BaseRepositoryTest {
     @Container
     private static final GenericContainer<?> mongoDbContainer = new GenericContainer<>(DockerImageName.parse("mongo:latest"))
             .withAccessToHost(true)
-            .withExposedPorts(27017)
+            .withExposedPorts(MONGO_PORT)
             .withEnv("MONGO_INIT_DATABASE", "storebuilder-test")
             .withFileSystemBind(
                     MountableFile.forClasspathResource("/stubs/").getResolvedPath(),
@@ -67,7 +69,7 @@ public class BaseRepositoryTest {
         MockDataGenerator mockDataGenerator = new MockDataGenerator(domainServices, resourceLoader, mockGeneratorConfig);
         mockDataGenerator.generateMockData(10);
 
-        mongoDbContainer.setPortBindings(List.of("27017:27017"));
+        mongoDbContainer.setPortBindings(List.of(MONGO_PORT + ":" + MONGO_PORT));
         mongoDbContainer.start();
 
         ExecResult result = mongoDbContainer.execInContainer("bash", "/mongoInit.sh");
@@ -79,13 +81,14 @@ public class BaseRepositoryTest {
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.mongodb.host", mongoDbContainer::getHost);
-        registry.add("spring.data.mongodb.port", mongoDbContainer::getFirstMappedPort);
+        registry.add("spring.data.mongodb.port", () -> mongoDbContainer.getMappedPort(MONGO_PORT));
         registry.add("spring.data.mongodb.database", () -> "storebuilder-test");
-        registry.add("spring.data.mongodb.uri", () -> String.format("mongodb://%s:%s/%s", mongoDbContainer.getHost(), mongoDbContainer.getFirstMappedPort(), "storebuilder-test"));
+        registry.add("spring.data.mongodb.uri", () -> String.format("mongodb://%s:%s/%s", mongoDbContainer.getHost(), mongoDbContainer.getMappedPort(MONGO_PORT), "storebuilder-test"));
     }
 
     @AfterAll
     public static void tearDown(){
+        mongoDbContainer.close();
         mongoDbContainer.stop();
     }
 
