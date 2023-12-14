@@ -28,6 +28,15 @@ import org.testcontainers.containers.Container.ExecResult;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Base Integration test.
+ * Configures mongodb container and generates mocks based on MockDomainService.
+ * One service per domain class to generate relevant mocks. Each mock generates mock JSON files
+ * which are imported into mongodb running in the container using a shell script `mongoInti.sh`.
+ *
+ * @see MockDomainService
+ * @author shalomsam
+ */
 @Slf4j
 @DataMongoTest
 @ComponentScan(basePackages = "com.shalomsam.storebuilder.testUtils")
@@ -39,9 +48,6 @@ public class BaseRepositoryTest {
 
     @Autowired
     private OrganizationRepository organizationRepository;
-
-    @Autowired
-    private ApplicationContext applicationContext;
 
     @Container
     private static final GenericContainer<?> mongoDbContainer = new GenericContainer<>(DockerImageName.parse("mongo:latest"))

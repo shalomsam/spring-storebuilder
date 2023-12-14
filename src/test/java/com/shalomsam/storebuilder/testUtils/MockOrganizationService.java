@@ -1,6 +1,7 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.github.javafaker.Faker;
+import com.shalomsam.storebuilder.domain.AuditMetadata;
 import com.shalomsam.storebuilder.domain.Organization;
 import com.shalomsam.storebuilder.domain.user.Address;
 import com.shalomsam.storebuilder.domain.user.ContactInfo;
@@ -15,8 +16,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -36,6 +40,23 @@ public class MockOrganizationService implements MockDomainService<Organization> 
             String companyName = faker.company().name();
             List<Address> companyLocations = new ArrayList<>();
             String state = faker.address().stateAbbr();
+
+            // create mock auditMeta
+            ZonedDateTime createdAt = ZonedDateTime.of(
+                faker
+                    .date()
+                    .past(2, TimeUnit.DAYS)
+                    .toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime(),
+                ZoneId.systemDefault()
+            );
+            ZonedDateTime updatedAt = ZonedDateTime.now(ZoneId.systemDefault());
+            AuditMetadata auditMetadata = new AuditMetadata();
+            auditMetadata.setUpdatedAt(updatedAt);
+            auditMetadata.setCreatedAt(createdAt);
+
+            // generate company address list
             companyLocations.add(
                 Address.builder()
                     .id(new ObjectId())
@@ -49,8 +70,9 @@ public class MockOrganizationService implements MockDomainService<Organization> 
                     .postalCode(faker.address().zipCodeByState(state))
                     .build()
             );
+
             Organization organization = Organization.builder()
-                .id(new ObjectId())
+                .id(new ObjectId().toString())
                 .name(companyName)
                 .shopUrl(faker.company().url())
                 .contactInfo(
@@ -61,6 +83,7 @@ public class MockOrganizationService implements MockDomainService<Organization> 
                         .addresses(companyLocations)
                         .build()
                 )
+                .auditMetadata(auditMetadata)
                 .build();
 
             organizations.add(organization);
@@ -75,7 +98,6 @@ public class MockOrganizationService implements MockDomainService<Organization> 
 
         if (writeMockDataToFile) {
             String stubsDirectoryStr = "src/test/resources/stubs";
-            ClassLoader classLoader = getClass().getClassLoader();
             Path directoryPath = Paths.get(stubsDirectoryStr);
             File directory = new File(directoryPath.toString());
 

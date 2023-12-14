@@ -3,6 +3,15 @@ package com.shalomsam.storebuilder.testUtils;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * MockDomainService defines the mock generator service class implementation.
+ * Each implementing class needs to define 2 `generateMock` methods.
+ * One to generate the mock, and the second to write generated mock JSON files to directory.
+ *
+ * @param <T> Domain model.
+ *
+ * @author shalomsam
+ */
 public interface MockDomainService<T> {
 
     String getEntityType();

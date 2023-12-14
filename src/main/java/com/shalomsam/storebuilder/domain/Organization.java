@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 import org.springframework.data.mongodb.core.mapping.Unwrapped;
@@ -20,7 +19,7 @@ import java.io.Serializable;
 public class Organization implements Serializable {
 
     @MongoId
-    private ObjectId id;
+    private String id;
 
     private String name;
 
