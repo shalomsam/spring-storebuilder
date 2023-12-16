@@ -1,14 +1,10 @@
 package com.shalomsam.storebuilder.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.shalomsam.storebuilder.config.JacksonZonedDateTimeConfig;
 import com.shalomsam.storebuilder.config.RoutesConfig;
 import com.shalomsam.storebuilder.domain.Organization;
 import com.shalomsam.storebuilder.service.DomainService;
 import com.shalomsam.storebuilder.testUtils.MockOrganizationService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -32,27 +28,19 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = OrganizationHandler.class)
-@Import(RoutesConfig.class)
+@Import({JacksonZonedDateTimeConfig.class, RoutesConfig.class, MockOrganizationService.class})
 public class OrganizationHandlerTest {
 
     public static final SecurityMockServerConfigurers.JwtMutator AUTHORITIES = mockJwt().authorities(new SimpleGrantedAuthority("user"));
 
-    private final MockOrganizationService mockOrganizationService = new MockOrganizationService();
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private MockOrganizationService mockOrganizationService;
 
     @Autowired
     private WebTestClient webTestClient;
 
     @MockBean
     private DomainService<Organization> organizationService;
-
-    @BeforeEach
-    public void setUp() {
-        objectMapper.findAndRegisterModules();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    }
 
     @Test
     public void testOrganizationGetAll() {
@@ -110,6 +98,9 @@ public class OrganizationHandlerTest {
 
         bodyContentSpec.jsonPath("$.status").isEqualTo("success");
         bodyContentSpec.jsonPath("$.organization.id").isEqualTo(mockOrganization.getId());
+        bodyContentSpec.jsonPath("$.organization.name").isEqualTo(mockOrganization.getName());
+        bodyContentSpec.jsonPath("$.organization.auditMetadata.createdAt").isEqualTo(mockOrganization.getAuditMetadata().getCreatedAt().toOffsetDateTime().toZonedDateTime().toString());
+        bodyContentSpec.jsonPath("$.organization.auditMetadata.updatedAt").isEqualTo(mockOrganization.getAuditMetadata().getUpdatedAt().toOffsetDateTime().toZonedDateTime().toString());
     }
 
 }

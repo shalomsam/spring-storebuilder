@@ -8,7 +8,7 @@ import com.shalomsam.storebuilder.domain.user.ContactInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -25,6 +25,12 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class MockOrganizationService implements MockDomainService<Organization> {
+
+    private final ObjectMapper objectMapper;
+
+    public MockOrganizationService(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public String getEntityType() {
@@ -51,7 +57,7 @@ public class MockOrganizationService implements MockDomainService<Organization> 
                     .toLocalDateTime(),
                 ZoneId.systemDefault()
             );
-            ZonedDateTime updatedAt = ZonedDateTime.now(ZoneId.systemDefault());
+            ZonedDateTime updatedAt = ZonedDateTime.now(ZoneId.of("UTC"));
             AuditMetadata auditMetadata = new AuditMetadata();
             auditMetadata.setUpdatedAt(updatedAt);
             auditMetadata.setCreatedAt(createdAt);
@@ -107,8 +113,6 @@ public class MockOrganizationService implements MockDomainService<Organization> 
             }
 
             File file = new File(directory.getPath() + "/organizations.json");
-
-            ObjectMapper objectMapper = new ObjectMapper();
             String orgJsonList = objectMapper.writeValueAsString(organizations);
 
             FileUtils.writeStringToFile(file, orgJsonList, StandardCharsets.UTF_8, false);

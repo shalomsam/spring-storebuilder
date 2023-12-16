@@ -1,5 +1,6 @@
 package com.shalomsam.storebuilder;
 
+import com.shalomsam.storebuilder.config.JacksonZonedDateTimeConfig;
 import com.shalomsam.storebuilder.domain.Organization;
 import com.shalomsam.storebuilder.repository.OrganizationRepository;
 import com.shalomsam.storebuilder.testUtils.MockDomainService;
@@ -12,8 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -39,8 +40,9 @@ import java.util.List;
  */
 @Slf4j
 @DataMongoTest
-@ComponentScan(basePackages = "com.shalomsam.storebuilder.testUtils")
-@EnableConfigurationProperties(MockGeneratorConfig.class)
+@ComponentScan(basePackages = {"com.shalomsam.storebuilder.testUtils"})
+@EnableConfigurationProperties({MockGeneratorConfig.class})
+@Import({JacksonZonedDateTimeConfig.class})
 @Testcontainers
 public class BaseRepositoryTest {
 
