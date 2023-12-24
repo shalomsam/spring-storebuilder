@@ -2,10 +2,16 @@ package com.shalomsam.storebuilder.controller;
 
 import com.shalomsam.storebuilder.config.JacksonZonedDateTimeConfig;
 import com.shalomsam.storebuilder.config.RoutesConfig;
+import com.shalomsam.storebuilder.domain.AuditMetadata;
 import com.shalomsam.storebuilder.domain.Organization;
+import com.shalomsam.storebuilder.domain.user.Address;
+import com.shalomsam.storebuilder.domain.user.ContactInfo;
 import com.shalomsam.storebuilder.service.DomainService;
 import com.shalomsam.storebuilder.testUtils.MockOrganizationService;
+import org.bson.types.ObjectId;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +23,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.apache.commons.lang3.SerializationUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -29,9 +38,12 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = OrganizationHandler.class)
 @Import({JacksonZonedDateTimeConfig.class, RoutesConfig.class, MockOrganizationService.class})
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class OrganizationHandlerTest {
 
     public static final SecurityMockServerConfigurers.JwtMutator AUTHORITIES = mockJwt().authorities(new SimpleGrantedAuthority("user"));
+
+    public static final int MOCK_SIZE = 10;
 
     @Autowired
     private MockOrganizationService mockOrganizationService;
@@ -42,13 +54,18 @@ public class OrganizationHandlerTest {
     @MockBean
     private DomainService<Organization> organizationService;
 
+    private List<Organization> mockOrganizations;
+
+    @BeforeAll
+    public void setUp() {
+        mockOrganizations = mockOrganizationService.generateMock(MOCK_SIZE);
+    }
+
     @Test
     public void testOrganizationGetAll() {
 
         // given - precondition generating mock organization data;
-        int mockSize = 10;
-        List<Organization> mockOrganization = mockOrganizationService.generateMock(mockSize);
-        Mockito.when(organizationService.getAll()).thenReturn(Flux.fromIterable(mockOrganization));
+        Mockito.when(organizationService.getAll()).thenReturn(Flux.fromIterable(mockOrganizations));
 
         // when - client/browser performs GET request on /api/v1/organization endpoint
         WebTestClient.ResponseSpec response = this.webTestClient
@@ -68,13 +85,13 @@ public class OrganizationHandlerTest {
                 .isOk()
                 .expectBody()
                 .jsonPath("@.status").isEqualTo("success")
-                .jsonPath("@.organizations", hasSize(mockSize));
+                .jsonPath("@.organizations", hasSize(MOCK_SIZE));
     }
 
     @Test
     public void testOrganizationGetById() {
         // given - precondition generate a single mock organization
-        Organization mockOrganization = mockOrganizationService.generateMock(1).get(0);
+        Organization mockOrganization = mockOrganizations.get(0);
         Mockito.when(organizationService.getById(Mockito.anyString())).thenReturn(Mono.just(mockOrganization));
 
         // when - client/browser performs GET request on /api/v1/organization/{id} endpoint
@@ -101,6 +118,95 @@ public class OrganizationHandlerTest {
         bodyContentSpec.jsonPath("$.organization.name").isEqualTo(mockOrganization.getName());
         bodyContentSpec.jsonPath("$.organization.auditMetadata.createdAt").isEqualTo(mockOrganization.getAuditMetadata().getCreatedAt().toOffsetDateTime().toZonedDateTime().toString());
         bodyContentSpec.jsonPath("$.organization.auditMetadata.updatedAt").isEqualTo(mockOrganization.getAuditMetadata().getUpdatedAt().toOffsetDateTime().toZonedDateTime().toString());
+    }
+
+    @Test
+    public void testOrganizationGetByNonExistentIdReturnNotFound() {
+        // given - setup mocked repository to respond with Optional.Empty
+        String nonExistingId = "NON_EXISTING_ID";
+        Mockito.when(organizationService.getById(nonExistingId)).thenReturn(Mono.empty());
+
+        // when - client/browser performs GET request on /api/v1/organization/{id} endpoint
+        WebTestClient.ResponseSpec response = this.webTestClient
+                .mutateWith(csrf())
+                .mutateWith(AUTHORITIES)
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(RoutesConfig.OrganizationPath + "/" + nonExistingId)
+                        .build()
+                )
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange();
+
+        // then - should return a Not Found / 404 JSON response
+        response
+                .expectStatus()
+                .isNotFound()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("$.status").isEqualTo("error")
+                .jsonPath("$.message").isEqualTo("Not Found");
+    }
+
+    @Test
+    public void testCreateNewOrganizationReturnANewOrganization() {
+        // given - new Organization to add
+        List<Address> addressList = new ArrayList<>();
+        addressList.add(
+            Address.builder()
+                .city("Vancouver")
+                .state("British Columbia")
+                .buildingNumber("11111")
+                .street("Seymore Street")
+                .country("Canada")
+                .build()
+        );
+
+        Organization acmeCorporation = Organization.builder()
+            .name("Acme Corporation")
+            .shopUrl("http://test.acmecorp.com")
+            .contactInfo(
+                ContactInfo.builder()
+                    .email("info@acmecorp.com")
+                    .phone("777999888")
+                    .addresses(addressList)
+                .build()
+            )
+            .build();
+
+        Organization acmeCorpClone = SerializationUtils.clone(acmeCorporation);
+        ObjectId mockId = new ObjectId();
+        acmeCorpClone.setId(mockId.toString());
+
+        AuditMetadata auditMetadata = new AuditMetadata();
+        ZonedDateTime mockCreatedAt = ZonedDateTime.now();
+        auditMetadata.setCreatedAt(mockCreatedAt);
+        acmeCorpClone.setAuditMetadata(auditMetadata);
+        Mockito.when(organizationService.create(Mockito.any(Organization.class))).thenReturn(Mono.just(acmeCorpClone));
+
+        // when - client makes a request with new acmeCorporation json body
+        WebTestClient.ResponseSpec response = this.webTestClient
+                .mutateWith(csrf())
+                .mutateWith(AUTHORITIES)
+                .post()
+                .uri(uriBuilder -> uriBuilder
+                        .path(RoutesConfig.OrganizationPath)
+                        .build()
+                )
+                .accept(MediaType.APPLICATION_JSON)
+                .bodyValue(acmeCorporation)
+                .exchange();
+
+        // then - should return success response with created acmeCorporation object with ID
+        response
+                .expectStatus()
+                .isCreated()
+                .expectBody()
+                .consumeWith(System.out::println)
+                .jsonPath("$.status").isEqualTo("success")
+                .jsonPath("$.organization").exists()
+                .jsonPath("$.organization.id").isEqualTo(mockId.toString())
+                .jsonPath("$.organization.auditMetadata.createdAt").isEqualTo(mockCreatedAt.toOffsetDateTime().toZonedDateTime().toString());
     }
 
 }

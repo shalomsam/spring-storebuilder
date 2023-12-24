@@ -1,21 +1,20 @@
 package com.shalomsam.storebuilder;
 
 import com.shalomsam.storebuilder.config.JacksonZonedDateTimeConfig;
-import com.shalomsam.storebuilder.domain.Organization;
-import com.shalomsam.storebuilder.repository.OrganizationRepository;
 import com.shalomsam.storebuilder.testUtils.MockDomainService;
 import com.shalomsam.storebuilder.testUtils.MockGeneratorConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.BindMode;
@@ -29,6 +28,8 @@ import org.testcontainers.containers.Container.ExecResult;
 import java.io.IOException;
 import java.util.List;
 
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt;
+
 /**
  * Base Integration test.
  * Configures mongodb container and generates mocks based on MockDomainService.
@@ -39,17 +40,19 @@ import java.util.List;
  * @author shalomsam
  */
 @Slf4j
-@DataMongoTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@AutoConfigureWebTestClient
 @ComponentScan(basePackages = {"com.shalomsam.storebuilder.testUtils"})
 @EnableConfigurationProperties({MockGeneratorConfig.class})
 @Import({JacksonZonedDateTimeConfig.class})
 @Testcontainers
-public class BaseRepositoryTest {
+public class BaseIntegrationTest {
 
     public static int MONGO_PORT = 27017;
 
-    @Autowired
-    private OrganizationRepository organizationRepository;
+    public static final int MOCK_SIZE = 10;
+
+    public static final SecurityMockServerConfigurers.JwtMutator AUTHORITIES = mockJwt().authorities(new SimpleGrantedAuthority("user"));
 
     @Container
     private static final GenericContainer<?> mongoDbContainer = new GenericContainer<>(DockerImageName.parse("mongo:latest"))
@@ -98,11 +101,5 @@ public class BaseRepositoryTest {
     public static void tearDown(){
         mongoDbContainer.close();
         mongoDbContainer.stop();
-    }
-
-    @Test
-    public void testIfRepositoryIsSeeded() {
-        List<Organization> organizations = organizationRepository.findAll().toStream().toList();
-        Assertions.assertEquals(10, organizations.size());
     }
 }

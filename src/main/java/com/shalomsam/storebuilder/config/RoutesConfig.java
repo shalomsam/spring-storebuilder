@@ -31,7 +31,7 @@ public class RoutesConfig {
                     POST(OrganizationPath).and(accept(MediaType.APPLICATION_JSON)),
                     organizationHandler::create)
                 .andRoute(
-                    PATCH(OrganizationPath + IdPath),
+                    PUT(OrganizationPath + IdPath),
                     organizationHandler::updateById
                 )
                 .andRoute(

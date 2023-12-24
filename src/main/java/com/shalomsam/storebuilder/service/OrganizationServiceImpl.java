@@ -1,6 +1,5 @@
 package com.shalomsam.storebuilder.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shalomsam.storebuilder.domain.Organization;
 import com.shalomsam.storebuilder.repository.OrganizationRepository;
 import org.springframework.stereotype.Service;
@@ -13,8 +12,6 @@ import java.util.List;
 public class OrganizationServiceImpl implements DomainService<Organization> {
 
     private final OrganizationRepository repository;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     OrganizationServiceImpl(OrganizationRepository repository) {
         this.repository = repository;
