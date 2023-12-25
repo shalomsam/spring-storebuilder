@@ -1,5 +1,7 @@
 HELP.md
 target/
+test/resources/stubs/
+/src/test/resources/stubs/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

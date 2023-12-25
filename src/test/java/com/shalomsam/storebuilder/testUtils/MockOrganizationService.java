@@ -65,7 +65,7 @@ public class MockOrganizationService implements MockDomainService<Organization> 
             // generate company address list
             companyLocations.add(
                 Address.builder()
-                    .id(new ObjectId())
+                    .id(new ObjectId().toString())
                     .city(faker.address().city())
                     .unit(String.valueOf(faker.number().randomNumber()))
                     .buildingNumber(faker.address().buildingNumber())

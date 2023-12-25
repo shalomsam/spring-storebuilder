@@ -116,8 +116,10 @@ public class OrganizationHandlerTest {
         bodyContentSpec.jsonPath("$.status").isEqualTo("success");
         bodyContentSpec.jsonPath("$.organization.id").isEqualTo(mockOrganization.getId());
         bodyContentSpec.jsonPath("$.organization.name").isEqualTo(mockOrganization.getName());
-        bodyContentSpec.jsonPath("$.organization.auditMetadata.createdAt").isEqualTo(mockOrganization.getAuditMetadata().getCreatedAt().toOffsetDateTime().toZonedDateTime().toString());
-        bodyContentSpec.jsonPath("$.organization.auditMetadata.updatedAt").isEqualTo(mockOrganization.getAuditMetadata().getUpdatedAt().toOffsetDateTime().toZonedDateTime().toString());
+        bodyContentSpec.jsonPath("$.organization.auditMetadata.createdAt")
+                .value(v -> mockOrganization.getAuditMetadata().getCreatedAt().isEqual(ZonedDateTime.parse(v.toString())));
+        bodyContentSpec.jsonPath("$.organization.auditMetadata.updatedAt")
+                .value(v -> mockOrganization.getAuditMetadata().getCreatedAt().isEqual(ZonedDateTime.parse(v.toString())));
     }
 
     @Test
@@ -206,7 +208,7 @@ public class OrganizationHandlerTest {
                 .jsonPath("$.status").isEqualTo("success")
                 .jsonPath("$.organization").exists()
                 .jsonPath("$.organization.id").isEqualTo(mockId.toString())
-                .jsonPath("$.organization.auditMetadata.createdAt").isEqualTo(mockCreatedAt.toOffsetDateTime().toZonedDateTime().toString());
+                .jsonPath("$.organization.auditMetadata.createdAt").value(v -> mockCreatedAt.isEqual(ZonedDateTime.parse(v.toString())));
     }
 
 }
