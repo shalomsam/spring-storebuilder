@@ -1,6 +1,9 @@
 # spring-storebuilder
 online store builder application
 
+[![CodeFactor](https://www.codefactor.io/repository/github/shalomsam/spring-storebuilder/badge)](https://www.codefactor.io/repository/github/shalomsam/spring-storebuilder)
+
+
 # Setup
 To run this application you need to supply a valid mongo uri. This application is configured to use spring cloud with Hashicorp Vault as its source for secrets.
 
