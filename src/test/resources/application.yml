@@ -1,3 +1,7 @@
+spring:
+  cloud:
+    vault:
+      enable: false
 server:
   port: 8081
 mocks:
