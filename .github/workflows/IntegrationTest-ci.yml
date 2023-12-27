@@ -29,5 +29,11 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: |
+        echo "ls -al >> "
+        ls -al
+        echo "ls -al src/test/resources >> "
+        ls -al src/test/resources
         mkdir -p src/test/resources/stubs
+        echo "ls -al src/test/resources 2>> "
+        ls -al src/test/resources
         mvn verify -Psurefire
