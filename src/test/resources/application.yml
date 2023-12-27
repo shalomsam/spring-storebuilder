@@ -1,7 +1,7 @@
 spring:
   cloud:
     vault:
-      enable: false
+      enabled: false
 server:
   port: 8081
 mocks:
