@@ -60,7 +60,7 @@ public class BaseIntegrationTest {
             .withExposedPorts(MONGO_PORT)
             .withEnv("MONGO_INIT_DATABASE", "storebuilder-test")
             .withFileSystemBind(
-                    MountableFile.forClasspathResource("/stubs/").getResolvedPath(),
+                    MountableFile.forHostPath("src/test/resources/stubs/").getResolvedPath(),
                     "/stubs/",
                     BindMode.READ_WRITE
             )
