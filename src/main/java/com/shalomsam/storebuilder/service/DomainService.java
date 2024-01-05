@@ -15,5 +15,7 @@ public interface DomainService<T> {
 
     Flux<T> updateMany(List<T> entities);
 
-    Mono<T> deleteById(String id);
+    Mono<Integer> deleteById(String id);
+
+    Mono<Long> getCount();
 }

@@ -1,7 +1,7 @@
 package com.shalomsam.storebuilder;
 
 import com.shalomsam.storebuilder.config.JacksonZonedDateTimeConfig;
-import com.shalomsam.storebuilder.testUtils.MockDomainService;
+import com.shalomsam.storebuilder.testUtils.MockGeneratorService;
 import com.shalomsam.storebuilder.testUtils.MockGeneratorConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
@@ -36,7 +36,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * One service per domain class to generate relevant mocks. Each mock generates mock JSON files
  * which are imported into mongodb running in the container using a shell script `mongoInti.sh`.
  *
- * @see MockDomainService
+ * @see MockGeneratorService
  * @author shalomsam
  */
 @Slf4j
@@ -71,7 +71,7 @@ public class BaseIntegrationTest {
 
     @BeforeAll
     public static void setUp(
-            @Autowired List<MockDomainService<?>> domainServices,
+            @Autowired List<MockGeneratorService<?>> domainServices,
             @Autowired ResourceLoader resourceLoader,
             @Autowired MockGeneratorConfig mockGeneratorConfig
     ) throws IOException, InterruptedException {

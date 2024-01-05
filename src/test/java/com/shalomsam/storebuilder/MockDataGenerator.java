@@ -1,6 +1,6 @@
 package com.shalomsam.storebuilder;
 
-import com.shalomsam.storebuilder.testUtils.MockDomainService;
+import com.shalomsam.storebuilder.testUtils.MockGeneratorService;
 import com.shalomsam.storebuilder.testUtils.MockGeneratorConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.test.context.TestComponent;
@@ -40,7 +40,7 @@ public class MockDataGenerator {
             "employeeAddress"
     };
 
-    private final List<MockDomainService<?>> domainServices;
+    private final List<MockGeneratorService<?>> domainServices;
 
     private final ResourceLoader resourceLoader;
 
@@ -49,7 +49,7 @@ public class MockDataGenerator {
     private final Map<String, List<String>> entityIds = new HashMap<>();
 
     public MockDataGenerator(
-            List<MockDomainService<?>> domainServices,
+            List<MockGeneratorService<?>> domainServices,
             ResourceLoader resourceLoader,
             MockGeneratorConfig config
     ) {

@@ -3,6 +3,9 @@ online store builder application
 
 [![CodeFactor](https://www.codefactor.io/repository/github/shalomsam/spring-storebuilder/badge)](https://www.codefactor.io/repository/github/shalomsam/spring-storebuilder)
 [![codecov](https://codecov.io/gh/shalomsam/spring-storebuilder/graph/badge.svg?token=DO0JC6CSPX)](https://codecov.io/gh/shalomsam/spring-storebuilder)
+[![CodeQL](https://github.com/shalomsam/spring-storebuilder/actions/workflows/codeql.yml/badge.svg)](https://github.com/shalomsam/spring-storebuilder/actions/workflows/codeql.yml)
+[![Integration Tests](https://github.com/shalomsam/spring-storebuilder/actions/workflows/IntegrationTest-ci.yml/badge.svg?branch=main)](https://github.com/shalomsam/spring-storebuilder/actions/workflows/IntegrationTest-ci.yml)
+[![Java CI with Maven](https://github.com/shalomsam/spring-storebuilder/actions/workflows/code-ci.yml/badge.svg?branch=main)](https://github.com/shalomsam/spring-storebuilder/actions/workflows/code-ci.yml)
 
 # Setup
 To run this application you need to supply a valid mongo uri. This application is configured to use spring cloud with Hashicorp Vault as its source for secrets.

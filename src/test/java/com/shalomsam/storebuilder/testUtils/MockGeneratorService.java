@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * MockDomainService defines the mock generator service class implementation.
+ * MockGeneratorService defines the mock generator service class implementation.
  * Each implementing class needs to define 2 `generateMock` methods.
  * One to generate the mock, and the second to write generated mock JSON files to directory.
  *
@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author shalomsam
  */
-public interface MockDomainService<T> {
+public interface MockGeneratorService<T> {
 
     String getEntityType();
 

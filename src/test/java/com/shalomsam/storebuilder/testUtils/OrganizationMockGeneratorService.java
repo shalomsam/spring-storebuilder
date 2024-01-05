@@ -24,11 +24,11 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
-public class MockOrganizationService implements MockDomainService<Organization> {
+public class OrganizationMockGeneratorService implements MockGeneratorService<Organization> {
 
     private final ObjectMapper objectMapper;
 
-    public MockOrganizationService(ObjectMapper objectMapper) {
+    public OrganizationMockGeneratorService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 

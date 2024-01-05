@@ -17,9 +17,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Component
@@ -32,7 +30,7 @@ public class OrganizationHandler {
         this.organizationService = organizationService;
     }
 
-    public Mono<ServerResponse> getAll(ServerRequest serverRequest) {
+    public Mono<ServerResponse> getAll(ServerRequest ignoredServerRequest) {
         log.info("OrganizationHandler getAll method called.");
         return organizationService.getAll().collectList().flatMap(organizations -> {
             return ServerResponse
@@ -66,8 +64,8 @@ public class OrganizationHandler {
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(
                         new ErrorResponseDto()
-                                .setMessage(HttpStatus.NOT_FOUND.getReasonPhrase())
-                                .status(ApiResponse.ApiResponseType.ERROR.getValue())
+                            .setMessage(HttpStatus.NOT_FOUND.getReasonPhrase())
+                            .status(ApiResponse.ApiResponseType.ERROR.getValue())
                     )
             );
     }
@@ -108,26 +106,33 @@ public class OrganizationHandler {
         String id = request.pathVariable("id");
         return request
             .bodyToMono(Organization.class)
-            .flatMap(organization -> organizationService.updateById(id, organization))
+            .flatMap(reqOrg -> {
+                Mono<Organization> updatedOrgMono = organizationService.updateById(id, reqOrg);
+                log.debug("updatedOrgMono : {} ", updatedOrgMono);
+                return updatedOrgMono;
+            })
             .flatMap(organization ->
-                ServerResponse
-                    .ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(
-                        new SuccessResponseDto<Organization>()
-                            .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
-                            .addData("organization", organization)
-                    )
-                    .switchIfEmpty(
-                        ServerResponse
-                            .status(HttpStatus.NOT_FOUND)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .bodyValue(
-                                new ErrorResponseDto()
-                                    .setMessage(HttpStatus.NOT_FOUND.getReasonPhrase())
-                                    .status(ApiResponse.ApiResponseType.ERROR.getValue())
-                            )
-                    )
+                {
+                    log.debug("Server flatmap: {} ", organization);
+                    return ServerResponse
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(
+                            new SuccessResponseDto<Organization>()
+                                .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
+                                .addData("organization", organization)
+                        )
+                        .switchIfEmpty(
+                            ServerResponse
+                                .status(HttpStatus.NOT_FOUND)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(
+                                    new ErrorResponseDto()
+                                        .setMessage(HttpStatus.NOT_FOUND.getReasonPhrase())
+                                        .status(ApiResponse.ApiResponseType.ERROR.getValue())
+                                )
+                        );
+                }
             );
     }
 
@@ -140,10 +145,10 @@ public class OrganizationHandler {
                     .ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(
-                        Objects
-                            .requireNonNull(
-                                new HashMap<>().put("deleted", id)
-                            )
+                        new SuccessResponseDto<>()
+                            .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
+                            .addData("deleted", id)
+                            .addData("count", organizationService.getCount().block())
                     )
             )
             .switchIfEmpty(
