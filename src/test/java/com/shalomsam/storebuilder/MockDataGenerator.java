@@ -8,7 +8,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +45,7 @@ public class MockDataGenerator {
 
     public final MockGeneratorConfig mockGeneratorConfig;
 
-    private final Map<String, List<String>> entityIds = new HashMap<>();
+    private final Map<String, List<?>> entityMap = new HashMap<>();
 
     public MockDataGenerator(
             List<MockGeneratorService<?>> domainServices,
@@ -68,26 +67,17 @@ public class MockDataGenerator {
             // get all domain classes
             domainServices.forEach(domainService -> {
                 try {
-                    List<String> ids = domainService.generateMock(size, mockGeneratorConfig.isShouldWriteMockDataToFile())
-                            .stream()
-                            .map(MockDataGenerator::extractId)
-                            .toList();
+                    List<?> entities = domainService.generateMock(size);
 
-                    entityIds.put(domainService.getEntityType(), ids);
-                } catch (IOException e) {
+                    entityMap.put(domainService.getCollectionName(), entities);
+
+                    //domainService.buildMockRelationShips(entityMap);
+
+                    domainService.writeMockToJsonFile(entityMap);
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             });
-        }
-    }
-
-    public static String extractId(Object object) {
-        try {
-            Field field = object.getClass().getDeclaredField("id");
-            field.setAccessible(true);
-            return String.valueOf(field.get(object));
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
         }
     }
 }

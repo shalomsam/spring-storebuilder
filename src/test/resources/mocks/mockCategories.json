@@ -1,0 +1,28 @@
+{
+  "Electronics": {
+    "Laptops & Computers": [
+      "Laptops & Notebooks",
+      "Gaming PCs"
+    ],
+    "TV & Video": [
+      "TVs",
+      "TV mounts",
+      "Media players"
+    ],
+    "Video Games": [
+      "PC gaming"
+    ]
+  },
+  "Video Games": {
+    "Playstation 5": [
+      "PS5 games",
+      "PS5 accessories",
+      "PS5 consoles"
+    ],
+    "PC gaming": [
+      "PC games",
+      "Gaming laptops",
+      "Gaming desktops"
+    ]
+  }
+}

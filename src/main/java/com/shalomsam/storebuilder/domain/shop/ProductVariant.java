@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.math.BigDecimal;
@@ -20,11 +21,17 @@ import java.util.List;
 public class ProductVariant {
 
     @MongoId
-    private ObjectId id;
+    private String id;
 
     @Field("productId")
     @DocumentReference
     private Product product;
+
+    @Indexed(unique = true)
+    private String sku;
+
+    @Indexed(unique = true)
+    private String upc;
 
     @Field("sellerId")
     @DocumentReference
@@ -35,7 +42,13 @@ public class ProductVariant {
     private List<ProductAttribute> attributes;
 
     @Field(targetType = FieldType.DECIMAL128)
-    private BigDecimal price;
+    private BigDecimal listPrice;
+
+    @Field(targetType = FieldType.DECIMAL128)
+    private BigDecimal salePrice;
+
+    @Field(targetType = FieldType.DECIMAL128)
+    private BigDecimal bulkPrice;
 
     @Field("inventoryIds")
     @DocumentReference(lazy = true)

@@ -20,7 +20,7 @@ import java.time.ZonedDateTime;
 public class Discount {
 
     @MongoId
-    private ObjectId id;
+    private String id;
 
     @Field("productVariantId")
     @DocumentReference

@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.math.BigDecimal;
@@ -49,6 +50,10 @@ public class Order {
     @Field("addressId")
     @DocumentReference
     private Address shippingAddress;
+
+    @Field("inventoryId")
+    @DocumentReference(lazy = true)
+    private Inventory inventory;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

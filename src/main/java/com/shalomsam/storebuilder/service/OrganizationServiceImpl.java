@@ -58,6 +58,10 @@ public class OrganizationServiceImpl implements DomainService<Organization> {
         return repository.deleteById(id).thenReturn(1);
     }
 
+    @Override
+    public Mono<Integer> deleteManyById(List<String> ids) {
+        return repository.deleteAllByIdIn(ids);
+    }
 
 
     @Override

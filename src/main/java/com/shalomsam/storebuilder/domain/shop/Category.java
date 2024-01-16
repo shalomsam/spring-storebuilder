@@ -1,38 +1,41 @@
 package com.shalomsam.storebuilder.domain.shop;
 
 import com.shalomsam.storebuilder.domain.AuditMetadata;
+import com.shalomsam.storebuilder.domain.SeoMetaData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.util.List;
-
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Document
-public class Inventory {
+public class Category {
     @MongoId
     private String id;
 
-    @Field("productVariantId")
+    private String name;
+
+    private String nameSlug;
+
+    private boolean isActive = false;
+
+    private String imageUrl;
+
+    private SeoMetaData seoMetaData;
+
+    @Field("parentCategoryIds")
     @DocumentReference
-    private ProductVariant productVariant;
+    private List<Category> parentCategories;
 
-    private StockLocation location;
-
-    private int stockCount;
-
-    @ReadOnlyProperty
-    @Field("orderIds")
-    @DocumentReference(lookup = "{'inventory': ?#{#self.id} }")
-    private List<Order> orders;
+    @Field("childCategoryIds")
+    @DocumentReference
+    private List<Category> childCategories;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

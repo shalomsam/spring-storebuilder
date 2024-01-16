@@ -2,6 +2,7 @@ package com.shalomsam.storebuilder.domain.shop;
 
 import com.shalomsam.storebuilder.domain.AuditMetadata;
 import com.shalomsam.storebuilder.domain.Organization;
+import com.shalomsam.storebuilder.domain.user.ContactInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +17,7 @@ import org.springframework.data.mongodb.core.mapping.*;
 @Document
 public class Seller {
     @MongoId
-    private ObjectId id;
+    private String id;
 
     @Field("organizationId")
     @DocumentReference
@@ -29,6 +30,8 @@ public class Seller {
     private SellerType sellerType;
 
     private boolean isOnline;
+
+    private ContactInfo contactInfo;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

@@ -71,13 +71,13 @@ public class BaseIntegrationTest {
 
     @BeforeAll
     public static void setUp(
-            @Autowired List<MockGeneratorService<?>> domainServices,
+            @Autowired List<MockGeneratorService<?>> mockGeneratorServices,
             @Autowired ResourceLoader resourceLoader,
             @Autowired MockGeneratorConfig mockGeneratorConfig
     ) throws IOException, InterruptedException {
 
         // Generate Mock data if not exists
-        MockDataGenerator mockDataGenerator = new MockDataGenerator(domainServices, resourceLoader, mockGeneratorConfig);
+        MockDataGenerator mockDataGenerator = new MockDataGenerator(mockGeneratorServices, resourceLoader, mockGeneratorConfig);
         mockDataGenerator.generateMockData(10);
 
         mongoDbContainer.setPortBindings(List.of(MONGO_PORT + ":" + MONGO_PORT));

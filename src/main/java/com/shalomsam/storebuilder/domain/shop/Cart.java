@@ -18,7 +18,7 @@ import java.util.List;
 @Document
 public class Cart {
     @MongoId
-    private ObjectId id;
+    private String id;
 
     @Field("customerId")
     @DocumentReference
