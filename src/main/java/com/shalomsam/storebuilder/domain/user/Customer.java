@@ -19,7 +19,7 @@ import java.util.List;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-@Document
+@Document(collection = "customers")
 public class Customer extends User {
 
     @Field("customerAccessId")

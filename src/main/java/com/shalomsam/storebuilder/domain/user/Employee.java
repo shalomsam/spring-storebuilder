@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @SuperBuilder
-@Document
+@Document(collection = "employees")
 public class Employee extends User {
     @Field("employeeAccessId")
     @DocumentReference

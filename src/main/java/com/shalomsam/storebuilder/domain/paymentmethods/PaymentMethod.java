@@ -1,21 +1,20 @@
 package com.shalomsam.storebuilder.domain.paymentmethods;
 
+import com.mongodb.lang.Nullable;
 import com.shalomsam.storebuilder.domain.AuditMetadata;
 import com.shalomsam.storebuilder.domain.user.Customer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
-import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.data.mongodb.core.mapping.MongoId;
-import org.springframework.data.mongodb.core.mapping.Unwrapped;
+import org.springframework.data.mongodb.core.mapping.*;
+
+import java.math.BigInteger;
 
 @Data
-@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
+@Document(collection = "paymentMethods")
 public class PaymentMethod {
     @MongoId
     private ObjectId id;
@@ -24,10 +23,18 @@ public class PaymentMethod {
     @DocumentReference
     private Customer customer;
 
-    private String nameOnCard;
-
     @Field("paymentMethodType")
     private String paymentMethodType;
+
+    @Nullable
+    private Card cardDetails;
+
+    @Nullable
+    @Field(targetType = FieldType.DECIMAL128)
+    private BigInteger cashAmount;
+
+    @Nullable
+    private StripeDetails stripeDetails;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

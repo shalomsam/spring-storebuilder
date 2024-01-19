@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @SuperBuilder
-@Document
+@Document(collection = "customerAccesses")
 public class CustomerAccess extends Access {
     @DocumentReference
     private Customer customer;

@@ -1,17 +1,19 @@
 package com.shalomsam.storebuilder.domain.paymentmethods;
 
-import lombok.*;
-import lombok.experimental.SuperBuilder;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
-@SuperBuilder
-@Document(collection = "paymentMethods")
-public class Card extends PaymentMethod {
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class Card {
 
     private CardBrandTypes brandName;
+
+    private String nameOnCard;
 
     private String cardNumber;
 

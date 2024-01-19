@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.mongodb.core.mapping.*;
 
@@ -16,7 +15,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Document
+@Document(collection = "inventories")
 public class Inventory {
     @MongoId
     private String id;
@@ -27,7 +26,7 @@ public class Inventory {
 
     private StockLocation location;
 
-    private int stockCount;
+    private Integer stockCount;
 
     @ReadOnlyProperty
     @Field("orderIds")

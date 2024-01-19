@@ -9,6 +9,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @SuperBuilder
-@Document
+@Document(collection = "stockLocations")
 public class StockLocation extends Address {
 }

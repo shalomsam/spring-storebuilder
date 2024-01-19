@@ -1,5 +1,6 @@
 package com.shalomsam.storebuilder.domain.shop;
 
+import com.mongodb.lang.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,12 @@ import java.math.BigDecimal;
 public class PriceSummary {
     private String title;
     private String description;
+
+    @Nullable
     @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal value;
+
+    @Nullable
+    @Field(targetType = FieldType.DOUBLE)
+    private Double percentage;
 }

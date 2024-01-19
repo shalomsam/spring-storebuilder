@@ -5,8 +5,8 @@ import lombok.Getter;
 @Getter
 public enum PaymentMethodType {
     CARD("card"),
-    BANK_TRANSFER("bankTransfer"),
-    STRIPE("stripe");
+    STRIPE("stripe"),
+    CASH("cash");
 
     private final String displayName;
 

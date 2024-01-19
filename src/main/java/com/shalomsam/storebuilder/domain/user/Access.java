@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 import org.springframework.data.mongodb.core.mapping.Unwrapped;
 
@@ -15,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Unwrapped;
 @NoArgsConstructor
 public class Access {
     @MongoId
-    private ObjectId id;
+    private String id;
 
     private String passHash;
 

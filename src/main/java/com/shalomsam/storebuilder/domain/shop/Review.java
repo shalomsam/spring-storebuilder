@@ -6,17 +6,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.*;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Document
+@Document(collection = "reviews")
 public class Review {
     @MongoId
-    private ObjectId id;
+    private String id;
 
     private String sku;
 
@@ -28,7 +27,7 @@ public class Review {
     @DocumentReference
     private Customer customer;
 
-    private float rating;
+    private Float rating;
 
     private String title;
 

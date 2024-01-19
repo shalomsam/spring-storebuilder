@@ -11,7 +11,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @SuperBuilder
-@Document
+@Document(collection = "employeeAccesses")
 public class EmployeeAccess extends Access {
 
     @Field("employeeAccessId")

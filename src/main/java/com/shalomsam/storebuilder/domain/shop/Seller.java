@@ -7,14 +7,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.*;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Document
+@Document(collection = "sellers")
 public class Seller {
     @MongoId
     private String id;
@@ -29,7 +28,7 @@ public class Seller {
 
     private SellerType sellerType;
 
-    private boolean isOnline;
+    private Boolean isOnline;
 
     private ContactInfo contactInfo;
 
