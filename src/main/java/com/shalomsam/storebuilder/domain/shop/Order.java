@@ -1,16 +1,19 @@
 package com.shalomsam.storebuilder.domain.shop;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mongodb.lang.Nullable;
 import com.shalomsam.storebuilder.domain.*;
-import com.shalomsam.storebuilder.domain.user.Address;
 import com.shalomsam.storebuilder.domain.user.Customer;
+import com.shalomsam.storebuilder.domain.user.CustomerAddress;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -19,16 +22,11 @@ import java.util.List;
 @AllArgsConstructor
 @Document(collection = "orders")
 public class Order {
+    @Id
     @MongoId
-    private ObjectId id;
-
-    @Field("customerId")
-    @DocumentReference
-    private Customer customer;
-
-    @Field("sellerId")
-    @DocumentReference
-    private Seller seller;
+    @Field(name = "_id")
+    @JsonProperty("_id")
+    private String id;
 
     private OrderStatus orderStatus;
 
@@ -46,9 +44,30 @@ public class Order {
 
     private List<Transaction> transactions;
 
+    private ShippingMethod shippingMethod;
+
+    private LocalDate shippingDeadline;
+
+    @Field("deliveryProviderId")
+    private ShippingCarrier deliveryProvider;
+
+    @Nullable
+    private String shippingLabelImgUrl;
+
+    @Nullable
+    private String trackingCode;
+
+    @Field("customerId")
+    @DocumentReference
+    private Customer customer;
+
+    @Field("sellerId")
+    @DocumentReference
+    private Seller seller;
+
     @Field("addressId")
     @DocumentReference
-    private Address shippingAddress;
+    private CustomerAddress shippingAddress;
 
     @Field("inventoryId")
     @DocumentReference(lazy = true)

@@ -1,10 +1,13 @@
 package com.shalomsam.storebuilder.testUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shalomsam.storebuilder.domain.SeoMetaData;
 import com.shalomsam.storebuilder.domain.shop.Category;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
@@ -22,6 +25,9 @@ public class CategoryMockGeneratorService implements MockGeneratorService<Catego
 
     static String COLLECTION_NAME = "categories";
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private final Faker faker = new Faker();
 
     private final Map<String, Category> cache = new HashMap<>();
@@ -29,6 +35,12 @@ public class CategoryMockGeneratorService implements MockGeneratorService<Catego
     @Override
     public String getCollectionName() {
         return COLLECTION_NAME;
+    }
+
+
+    @Override
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 
     public List<Category> generateMock(int size) {
@@ -55,7 +67,7 @@ public class CategoryMockGeneratorService implements MockGeneratorService<Catego
                     .parentCategories(null)
                     .build();
 
-                category.setChildCategories(generateMockSubCategories(category, size));
+//                category.setChildCategories(generateMockSubCategories(category, size/2));
 
                 cache.put(categoryName, category);
             } else {
@@ -69,7 +81,7 @@ public class CategoryMockGeneratorService implements MockGeneratorService<Catego
     }
 
     @Override
-    public void buildMockRelationShips(Map<String, List<?>> entityMap) {
+    public void buildMockRelationShips(ApplicationContext applicationContext) {
         // Do nothing as we are already generating
         // ParentCategory > SubCategory > SubCategory relationships
     }
@@ -98,7 +110,9 @@ public class CategoryMockGeneratorService implements MockGeneratorService<Catego
                 .parentCategories(parentCategoryList)
                 .build();
 
-            subCategory.setChildCategories(generateMockSubCategories(subCategory, size >= 4 ? size / 2 : size));
+//            if (size > 2) {
+//                subCategory.setChildCategories(generateMockSubCategories(subCategory, 1));
+//            }
             subCategories.add(subCategory);
         }
 

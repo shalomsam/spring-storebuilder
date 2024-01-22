@@ -1,5 +1,6 @@
 package com.shalomsam.storebuilder.domain.paymentmethods;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mongodb.lang.Nullable;
 import com.shalomsam.storebuilder.domain.AuditMetadata;
 import com.shalomsam.storebuilder.domain.user.Customer;
@@ -7,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.math.BigInteger;
@@ -16,7 +18,10 @@ import java.math.BigInteger;
 @NoArgsConstructor
 @Document(collection = "paymentMethods")
 public class PaymentMethod {
+    @Id
     @MongoId
+    @Field(name = "_id")
+    @JsonProperty("_id")
     private ObjectId id;
 
     @Field("customerId")

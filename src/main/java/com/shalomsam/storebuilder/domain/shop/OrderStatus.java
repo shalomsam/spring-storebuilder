@@ -6,8 +6,9 @@ import lombok.Getter;
 public enum OrderStatus {
     SUBMITTED("submitted"),
     PROCESSING("processing"),
-    SHIPPED("shipped"),
+    SHIPPED_IN_PROGRESS("shipping_in_progress"),
     DELIVERED("delivered"),
+    RECEIVED("received"),
     RETURNED("returned");
 
     private final String displayName;

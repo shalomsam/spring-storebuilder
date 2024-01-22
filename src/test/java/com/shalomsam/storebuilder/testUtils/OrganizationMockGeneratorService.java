@@ -6,12 +6,13 @@ import com.shalomsam.storebuilder.domain.user.ContactInfo;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -19,9 +20,18 @@ public class OrganizationMockGeneratorService implements MockGeneratorService<Or
 
     static String COLLECTION_NAME = "organizations";
 
+    @Autowired
+    public ObjectMapper objectMapper;
+
+
     @Override
     public String getCollectionName() {
         return COLLECTION_NAME;
+    }
+
+    @Override
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 
     @Override
@@ -59,7 +69,7 @@ public class OrganizationMockGeneratorService implements MockGeneratorService<Or
     }
 
     @Override
-    public void buildMockRelationShips(Map<String, List<?>> entityMap) {
+    public void buildMockRelationShips(ApplicationContext applicationContext) {
 
     }
 }

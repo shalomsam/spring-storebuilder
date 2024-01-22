@@ -1,10 +1,17 @@
 package com.shalomsam.storebuilder.testUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shalomsam.storebuilder.domain.shop.Discount;
+import com.shalomsam.storebuilder.domain.shop.ProductVariant;
+import com.shalomsam.storebuilder.repository.DiscountRepository;
+import com.shalomsam.storebuilder.repository.ProductVariantRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
@@ -20,11 +27,20 @@ public class DiscountMockGeneratorService implements MockGeneratorService<Discou
 
     static String COLLECTION_NAME = "discounts";
 
+    @Autowired
+    public ObjectMapper objectMapper;
+
     private final Faker faker = new Faker();
 
     @Override
     public String getCollectionName() {
         return COLLECTION_NAME;
+    }
+
+
+    @Override
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 
     @Override
@@ -52,17 +68,29 @@ public class DiscountMockGeneratorService implements MockGeneratorService<Discou
 
         return discounts;
     }
-
+    
     @Override
-    public void buildMockRelationShips(Map<String, List<?>> entityMap) {
-        List<Map> discounts = (List<Map>) entityMap.get(COLLECTION_NAME);
-        List<Map> productVariants = (List<Map>) entityMap.get("productVariant");
+    public void buildMockRelationShips(ApplicationContext applicationContext) {
+        DiscountRepository discountRepository = applicationContext.getBean(DiscountRepository.class);
+        ProductVariantRepository variantRepository = applicationContext.getBean(ProductVariantRepository.class);
 
-        discounts = discounts.stream().peek(discount -> {
-            Map relatedVariant = faker.options().nextElement(productVariants);
-            discount.put("productVariantId", relatedVariant.get("id"));
-        }).toList();
+        List<ProductVariant> variantList = variantRepository.findAll().toStream().toList();
+        Flux<Discount> discountFlux = discountRepository.findAll();
 
-        entityMap.put(getCollectionName(), discounts);
+        discountFlux.map(discount -> {
+            ProductVariant randomVariant = faker.options().nextElement(variantList);
+            String randomVariantId = randomVariant.getId();
+            discount.setProductVariant(randomVariant);
+
+            variantRepository.findById(randomVariantId)
+                .map(productVariant -> {
+                    productVariant.getDiscounts().add(discount);
+                    return productVariant;
+                })
+                .flatMap(variantRepository::save);
+
+            return discount;
+        })
+        .flatMap(discountRepository::save);
     }
 }

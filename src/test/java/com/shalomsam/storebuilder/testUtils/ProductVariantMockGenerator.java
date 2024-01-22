@@ -1,32 +1,40 @@
 package com.shalomsam.storebuilder.testUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shalomsam.storebuilder.domain.shop.Product;
 import com.shalomsam.storebuilder.domain.shop.ProductAttribute;
 import com.shalomsam.storebuilder.domain.shop.ProductCondition;
 import com.shalomsam.storebuilder.domain.shop.ProductVariant;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
-public class ProductVariantMockGeneratorService implements MockGeneratorService<ProductVariant> {
+public class ProductVariantMockGenerator implements MockGeneratorService<ProductVariant> {
 
     static String COLLECTION_NAME = "productVariants";
 
+    @Autowired
+    public ObjectMapper objectMapper;
+
+    @Getter
+    private final Map<String, List<String>> productToVariantMap = new HashMap<>();
+
     private final Faker faker = new Faker();
 
-    @Override
-    public String getCollectionName() {
-        return COLLECTION_NAME;
-    }
+    @Getter
+    @Setter
+    private static Product selectedProduct = null;
 
-    @Override
     public List<ProductVariant> generateMock(int size) {
         List<ProductVariant> productVariants = new ArrayList<>();
 
@@ -36,6 +44,7 @@ public class ProductVariantMockGeneratorService implements MockGeneratorService<
             BigDecimal bulkPrice = BigDecimal.valueOf(faker.number().randomDouble(2, 50, listPrice.intValue()));
             ProductVariant productVariant = ProductVariant.builder()
                 .id(new ObjectId().toString())
+                //.product(product) <-- reason below
                 .upc(String.valueOf(faker.barcode().ean8()))
                 .attributes(generateMockAttributes())
                 .listPrice(listPrice)
@@ -44,13 +53,34 @@ public class ProductVariantMockGeneratorService implements MockGeneratorService<
                 .condition(faker.options().option(ProductCondition.class))
                 .build();
 
-            productVariant.setSku(generateMockSku(productVariant));
+            // can't link product and variant directly as Jackson will produce
+            // infinite recursion. Hence, the linking will have to happen after
+            // initial data load. So for now we'll store the mapping in memory
+            if (getSelectedProduct() == null) {
+                throw new RuntimeException("Product must be set before `getSelectedProduct` is called. Got null.");
+            }
+            String productId = getSelectedProduct().getId();
+            String variantId = productVariant.getId();
+            if (!productToVariantMap.containsKey(productId)) {
+                productToVariantMap.put(productId, Collections.singletonList(variantId));
+            } else {
+                // ArrayList in class property is immutable, hence need to create new ArrayList
+                // before we can update its size.
+                List<String> variantIds = new ArrayList<>(productToVariantMap.get(productId));
+                variantIds.add(variantId);
+                productToVariantMap.put(productId, variantIds);
+            }
+
+            // we don't set the sku yet since in the real world the sku is created
+            // from the seller offer flow, ie when a productVariant offer is added
+            // by the seller. So in the mock generator this responsibility is in
+            // the OfferMockGeneratorService, after random offers have been linked
+            // to sellers
             productVariants.add(productVariant);
         }
 
         return productVariants;
     }
-
 
 
     public List<ProductAttribute> generateMockAttributes() {
@@ -83,32 +113,18 @@ public class ProductVariantMockGeneratorService implements MockGeneratorService<
         return productAttributes;
     }
 
-    public String generateMockSku(ProductVariant productVariant) {
-        return String.format(
-            "%.5s-%.5s-%.5s",
-            productVariant.getProduct().getBrandName().toUpperCase(),
-            productVariant.getAttributes().toString().replaceAll(" ", ""),
-            productVariant.getSeller().getId()
-        );
+    @Override
+    public String getCollectionName() {
+        return COLLECTION_NAME;
     }
 
     @Override
-    public void buildMockRelationShips(Map<String, List<?>> entityMap) {
-        List<Map> productVariants = (List<Map>) entityMap.get(COLLECTION_NAME);
-        List<Map> sellers = (List<Map>) entityMap.get("sellers");
-        List<Map> inventories = (List<Map>) entityMap.get(InventoryMockGeneratorService.COLLECTION_NAME);
-        List<Map> discounts = (List<Map>) entityMap.get(DiscountMockGeneratorService.COLLECTION_NAME);
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
 
-        // to include in random mock options
-        // some variants may not have a discount
-        discounts.add(null);
+    @Override
+    public void buildMockRelationShips(ApplicationContext applicationContext) {
 
-        productVariants = productVariants.stream().peek(variant -> {
-            variant.put("sellerId", faker.options().nextElement(sellers));
-            variant.put("inventoryIds", faker.options().nextElement(inventories));
-            variant.put("discountIds", faker.options().nextElement(discounts));
-        }).toList();
-
-        entityMap.put(getCollectionName(), productVariants);
     }
 }

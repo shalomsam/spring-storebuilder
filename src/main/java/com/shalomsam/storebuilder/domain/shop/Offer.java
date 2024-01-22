@@ -2,7 +2,6 @@ package com.shalomsam.storebuilder.domain.shop;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shalomsam.storebuilder.domain.AuditMetadata;
-import com.shalomsam.storebuilder.domain.user.Customer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,27 +9,31 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.*;
 
-import java.util.List;
-
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "carts")
-public class Cart {
+@NoArgsConstructor
+@Document(collection = "offers")
+public class Offer {
     @Id
     @MongoId
     @Field(name = "_id")
     @JsonProperty("_id")
     private String id;
 
-    @Field("customerId")
-    @DocumentReference
-    private Customer customer;
+    private OfferStatus offerStatus;
 
-    private CartStatus cartStatus;
+    @Field(name = "sellerId")
+    @DocumentReference(lazy = true, collection = "sellers")
+    private Seller seller;
 
-    private List<CartItem> cartItems;
+    @Field(name = "productVariantId")
+    @DocumentReference(lazy = true, collection = "productVariants")
+    private ProductVariant productVariant;
+
+    @Field(name = "inventoryId")
+    @DocumentReference(lazy = true, collection = "inventories")
+    private Inventory inventory;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

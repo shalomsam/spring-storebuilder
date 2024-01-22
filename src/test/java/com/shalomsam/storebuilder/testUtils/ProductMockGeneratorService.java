@@ -1,17 +1,16 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shalomsam.storebuilder.domain.shop.*;
-import com.shalomsam.storebuilder.domain.user.Address;
-import com.shalomsam.storebuilder.domain.user.ContactInfo;
-import com.shalomsam.storebuilder.service.DomainService;
-import com.shalomsam.storebuilder.service.ProductServiceImpl;
+import com.shalomsam.storebuilder.domain.shop.Product;
+import com.shalomsam.storebuilder.domain.shop.ProductVariant;
+import com.shalomsam.storebuilder.repository.ProductRepository;
+import com.shalomsam.storebuilder.repository.ProductVariantRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,11 +22,23 @@ public class ProductMockGeneratorService implements MockGeneratorService<Product
 
     static String COLLECTION_NAME = "products";
 
+    @Autowired
+    public ObjectMapper objectMapper;
+
     private final Faker faker = new Faker();
+
+    @Autowired
+    private ProductVariantMockGenerator productVariantMockGenerator;
 
     @Override
     public String getCollectionName() {
         return COLLECTION_NAME;
+    }
+
+
+    @Override
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 
     @Override
@@ -47,71 +58,37 @@ public class ProductMockGeneratorService implements MockGeneratorService<Product
                 .auditMetadata(MockHelper.generateMockAuditMetadata())
                 .build();
 
+            // Note: the generated variant mocks won't be linked until relationship building phase
+            // this is to avoid infinite recursion in Jackson (as we write to file)
+            // we also cannot set ProductVariant like so (below) coz that wld embed the document
+            // `product.setProductVariants(productVariantMockGenerator.generateMock(2, product));`
+            // which we don't want, hence we'll call the `productVariantMockGenerator` to generate
+            // the mapping, and use that during `buildMockRelationShips`
+            ProductVariantMockGenerator.setSelectedProduct(product);
+            productVariantMockGenerator.generateMock(2);
             products.add(product);
         }
 
         return products;
     }
 
-    public List<Seller> generateMockSellers(int size) {
-        List<Seller> sellers = new ArrayList<>();
-
-        for (int i = 0; i < size; i++) {
-            List<Address> mockAddresses = new ArrayList<>();
-            mockAddresses.add(MockHelper.generateMockAddress());
-            sellers.add(
-                Seller.builder()
-                    .id(new ObjectId().toString())
-                    .sellerType(faker.options().option(SellerType.class))
-                    .isOnline(faker.bool().bool())
-                    .shopSubDomain(faker.internet().domainWord())
-                    .name(faker.expression("Seller: #{company.name}"))
-                    .auditMetadata(MockHelper.generateMockAuditMetadata())
-                    .contactInfo(
-                        ContactInfo.builder()
-                            .addresses(mockAddresses)
-                            .email(faker.internet().emailAddress())
-                            .chatLink(faker.internet().url())
-                            .build()
-                    )
-                    .build()
-            );
-        }
-        return sellers;
-    }
-
-
-
-    @Override
-    public void buildMockRelationShips(Map<String, List<?>> entityMap) {
-        List<Map> products = (List<Map>) entityMap.get(COLLECTION_NAME);
-        List<Map> categories = (List<Map>) entityMap.get("category");
-        List<Map> productVariants = (List<Map>) entityMap.get("productVariant");
-        int relationSize = 3;
-
-        products = products.stream().peek(product -> {
-            List<String> mockRelatedVariants = new ArrayList<>();
-            List<String> mockRelatedCategories = new ArrayList<>();
-
-            for (int i = 0; i < relationSize; i++) {
-                Map relatedMockCategory = faker.options().nextElement(categories);
-                Map relatedMockProdVar = faker.options().nextElement(productVariants);
-
-                relatedMockProdVar.put("productId", product.get("id"));
-                mockRelatedCategories.add(relatedMockCategory.get("id").toString());
-                mockRelatedVariants.add(relatedMockProdVar.get("id").toString());
-            }
-
-            product.put("categoryIds", mockRelatedCategories);
-            product.put("productVariantIds", mockRelatedVariants);
-        }).toList();
-
-        entityMap.put(getCollectionName(), products);
-    }
-
     public void buildMockRelationShips(ApplicationContext applicationContext) {
-        DomainService<Product> productDomainService = applicationContext.getBean(ProductServiceImpl.class);
+        Map<String, List<String>> productToVariantMap = productVariantMockGenerator.getProductToVariantMap();
+        ProductRepository productRepository = applicationContext.getBean(ProductRepository.class);
+        ProductVariantRepository variantRepository = applicationContext.getBean(ProductVariantRepository.class);
 
-        Flux<Product> productFlux = productDomainService.getAll();
+        productToVariantMap.forEach((pId,vIds) -> {
+            Product product = productRepository.findById(pId).block();
+            List<ProductVariant> variants = variantRepository.findAllById(vIds).toStream().toList();
+
+            assert product != null;
+            product.setProductVariants(variants);
+            productRepository.save(product);
+
+            variants.forEach(variant -> {
+                variant.setProduct(product);
+                variantRepository.save(variant);
+            });
+        });
     }
 }

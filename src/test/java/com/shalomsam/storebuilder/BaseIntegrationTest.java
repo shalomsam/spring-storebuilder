@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ResourceLoader;
@@ -73,7 +74,8 @@ public class BaseIntegrationTest {
     public static void setUp(
             @Autowired List<MockGeneratorService<?>> mockGeneratorServices,
             @Autowired ResourceLoader resourceLoader,
-            @Autowired MockGeneratorConfig mockGeneratorConfig
+            @Autowired MockGeneratorConfig mockGeneratorConfig,
+            @Autowired ApplicationContext applicationContext
     ) throws IOException, InterruptedException {
 
         // Generate Mock data if not exists
@@ -87,6 +89,8 @@ public class BaseIntegrationTest {
         log.info("Exec stdout:\n {}", result.getStdout());
         log.info("Exec stderr:\n {}", result.getStderr());
         log.info("exit code={}", result.getExitCode());
+
+        mockGeneratorServices.forEach(mockGeneratorService -> mockGeneratorService.buildMockRelationShips(applicationContext));
     }
 
     @DynamicPropertySource

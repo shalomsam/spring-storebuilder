@@ -1,11 +1,13 @@
 package com.shalomsam.storebuilder.domain.shop;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shalomsam.storebuilder.domain.AuditMetadata;
 import com.shalomsam.storebuilder.domain.user.Customer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.*;
 
 @Data
@@ -14,7 +16,10 @@ import org.springframework.data.mongodb.core.mapping.*;
 @NoArgsConstructor
 @Document(collection = "reviews")
 public class Review {
+    @Id
     @MongoId
+    @Field(name = "_id")
+    @JsonProperty("_id")
     private String id;
 
     private String sku;

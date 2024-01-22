@@ -8,7 +8,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,28 +16,6 @@ import java.util.Map;
 @Component
 @TestComponent
 public class MockDataGenerator {
-
-    static String[] collectionNames = new String[]{
-            "organizations",
-            "cards",
-            "carts",
-            "discounts",
-            "inventories",
-            "orders",
-            "products",
-            "productVariants",
-            "reviews",
-            "sellers",
-            "stockLocations",
-            "transactions",
-            "customers",
-            "customerAccess",
-            "customerAddress",
-            "employees",
-            "employeeAccess",
-            "employeeAddress"
-    };
-
     private final List<MockGeneratorService<?>> domainServices;
 
     private final ResourceLoader resourceLoader;
@@ -70,8 +47,6 @@ public class MockDataGenerator {
                     List<?> entities = domainService.generateMock(size);
 
                     entityMap.put(domainService.getCollectionName(), entities);
-
-                    //domainService.buildMockRelationShips(entityMap);
 
                     domainService.writeMockToJsonFile(entityMap);
                 } catch (Exception e) {

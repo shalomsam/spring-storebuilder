@@ -1,10 +1,13 @@
 package com.shalomsam.storebuilder.domain.shop;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shalomsam.storebuilder.domain.AuditMetadata;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.*;
@@ -18,7 +21,10 @@ import java.util.List;
 @Document(collection = "products")
 public class Product {
 
-    @MongoId
+    @Id
+    @MongoId(targetType = FieldType.STRING)
+    @Field(name = "_id")
+    @JsonProperty("_id")
     private String id;
 
     @TextIndexed
@@ -39,7 +45,8 @@ public class Product {
     private List<Category> categories;
 
     @Field("productVariantIds")
-    @DocumentReference(lazy = true)
+    @ReadOnlyProperty
+    @DocumentReference(lookup = "{'product': ?#{#self.id} }")
     private List<ProductVariant> productVariants;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)

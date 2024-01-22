@@ -1,36 +1,31 @@
 package com.shalomsam.storebuilder.domain.shop;
 
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shalomsam.storebuilder.domain.AuditMetadata;
-import com.shalomsam.storebuilder.domain.user.Customer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.*;
-
-import java.util.List;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.MongoId;
+import org.springframework.data.mongodb.core.mapping.Unwrapped;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "carts")
-public class Cart {
+@Document(collection = "deliveryProviders")
+public class ShippingCarrier {
     @Id
     @MongoId
     @Field(name = "_id")
     @JsonProperty("_id")
     private String id;
 
-    @Field("customerId")
-    @DocumentReference
-    private Customer customer;
-
-    private CartStatus cartStatus;
-
-    private List<CartItem> cartItems;
+    private String name;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

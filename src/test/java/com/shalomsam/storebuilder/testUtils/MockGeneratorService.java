@@ -2,7 +2,8 @@ package com.shalomsam.storebuilder.testUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.context.ApplicationContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -27,16 +28,15 @@ public interface MockGeneratorService<T> {
 
     Logger log = LoggerFactory.getLogger(MockGeneratorService.class);
 
-    ObjectMapper objectMapper = new ObjectMapper();
-
     String getCollectionName();
 
     List<T> generateMock(int size);
 
-    default void writeMockToJsonFile(Map<String, List<?>> entityMap) throws IOException, ClassNotFoundException {
+    ObjectMapper getObjectMapper();
+
+    default void writeMockToJsonFile(Map<String, List<?>> entityMap) throws IOException {
         for (Map.Entry<String, List<?>> entry: entityMap.entrySet()) {
             String entityName = entry.getKey();
-            Class<?> clazz = Class.forName(entityName);
             List<Map> entities = (List<Map>) entry.getValue();
 
             String stubsDirectoryStr = "src/test/resources/stubs";
@@ -49,11 +49,11 @@ public interface MockGeneratorService<T> {
             }
 
             File file = new File(directory.getPath() + "/" + entityName + ".json");
-            String orgJsonList = objectMapper.writeValueAsString(entities);
+            String orgJsonList = getObjectMapper().writeValueAsString(entities);
 
             FileUtils.writeStringToFile(file, orgJsonList, StandardCharsets.UTF_8, false);
         }
     }
 
-    void buildMockRelationShips(Map<String, List<?>> entityMap);
+    void buildMockRelationShips(ApplicationContext applicationContext);
 }
