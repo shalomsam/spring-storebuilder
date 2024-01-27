@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -22,28 +23,23 @@ import java.util.List;
 @Document(collection = "customers")
 public class Customer extends User {
 
-    @Field("customerAccessId")
-    @DocumentReference
+    @Transient
     private CustomerAccess customerAccess;
+    private String customerAccessId;
 
-    @Field("customerAddressIds")
-    @DocumentReference
+    @Transient
     private List<CustomerAddress> addresses;
 
-    @Field("orderIds")
-    @DocumentReference
+    @Transient
     private List<Order> orders;
 
-    @Field("paymentMethodIds")
-    @DocumentReference
+    @Transient
     private List<PaymentMethod> paymentMethods;
 
-    @Field("reviewIds")
-    @DocumentReference
+    @Transient
     private List<Review> reviews;
 
-    @Field("transactionIds")
-    @DocumentReference
+    @Transient
     private List<Transaction> transactions;
 
 }

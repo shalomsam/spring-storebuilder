@@ -1,5 +1,6 @@
 package com.shalomsam.storebuilder.testUtils;
 
+import com.shalomsam.storebuilder.service.DomainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -33,6 +34,10 @@ public interface MockGeneratorService<T> {
     List<T> generateMock(int size);
 
     ObjectMapper getObjectMapper();
+
+    default <E> void writeToDatabase(List<E> entities) {
+        log.info("Method not implemented in class {}.", getClass());
+    }
 
     default void writeMockToJsonFile(Map<String, List<?>> entityMap) throws IOException {
         for (Map.Entry<String, List<?>> entry: entityMap.entrySet()) {

@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.*;
 
 @Data
@@ -24,13 +25,13 @@ public class Review {
 
     private String sku;
 
-    @Field("productId")
-    @DocumentReference
-    private Product product;
+    @Transient
+    private ProductVariant productVariant;
+    private String productVariantId;
 
-    @Field("customerId")
-    @DocumentReference
+    @Transient
     private Customer customer;
+    private String customerId;
 
     private Float rating;
 

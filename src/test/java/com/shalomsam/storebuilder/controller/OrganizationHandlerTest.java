@@ -25,6 +25,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
@@ -65,6 +66,9 @@ public class OrganizationHandlerTest {
     @MockBean
     private OrganizationRepository organizationRepository;
 
+    @MockBean
+    private ReactiveMongoTemplate reactiveMongoTemplate;
+
     @SpyBean
     private OrganizationServiceImpl organizationService;
 
@@ -76,7 +80,7 @@ public class OrganizationHandlerTest {
     @BeforeAll
     public void setUp() {
         mockOrganizations = organizationMockGeneratorService.generateMock(MOCK_SIZE);
-        organizationService = new OrganizationServiceImpl(organizationRepository);
+        organizationService = new OrganizationServiceImpl(organizationRepository, reactiveMongoTemplate);
     }
 
     @Test

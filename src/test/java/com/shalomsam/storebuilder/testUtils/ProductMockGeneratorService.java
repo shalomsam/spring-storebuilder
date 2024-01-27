@@ -64,8 +64,7 @@ public class ProductMockGeneratorService implements MockGeneratorService<Product
             // `product.setProductVariants(productVariantMockGenerator.generateMock(2, product));`
             // which we don't want, hence we'll call the `productVariantMockGenerator` to generate
             // the mapping, and use that during `buildMockRelationShips`
-            ProductVariantMockGenerator.setSelectedProduct(product);
-            productVariantMockGenerator.generateMock(2);
+            productVariantMockGenerator.generateMock(2, product);
             products.add(product);
         }
 
@@ -79,10 +78,12 @@ public class ProductMockGeneratorService implements MockGeneratorService<Product
 
         productToVariantMap.forEach((pId,vIds) -> {
             Product product = productRepository.findById(pId).block();
-            List<ProductVariant> variants = variantRepository.findAllById(vIds).toStream().toList();
+            List<ProductVariant> variants = variantRepository.findAllById(vIds).collectList().block();
 
             assert product != null;
-            product.setProductVariants(variants);
+            List<ProductVariant> productVariants = new ArrayList<>(product.getProductVariants());
+            productVariants.addAll(variants);
+            product.setProductVariants(productVariants);
             productRepository.save(product);
 
             variants.forEach(variant -> {

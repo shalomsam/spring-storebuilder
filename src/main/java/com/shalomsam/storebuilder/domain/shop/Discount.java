@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.math.BigDecimal;
@@ -26,9 +27,9 @@ public class Discount {
     @JsonProperty("_id")
     private String id;
 
-    @Field("productVariantId")
-    @DocumentReference
+    @Transient
     private ProductVariant productVariant;
+    private String productVariantId;
 
     private String title;
 

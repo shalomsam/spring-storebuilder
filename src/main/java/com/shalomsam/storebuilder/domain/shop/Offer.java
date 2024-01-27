@@ -23,17 +23,11 @@ public class Offer {
 
     private OfferStatus offerStatus;
 
-    @Field(name = "sellerId")
-    @DocumentReference(lazy = true, collection = "sellers")
-    private Seller seller;
+    private String sellerId;
 
-    @Field(name = "productVariantId")
-    @DocumentReference(lazy = true, collection = "productVariants")
-    private ProductVariant productVariant;
+    private String productVariantId;
 
-    @Field(name = "inventoryId")
-    @DocumentReference(lazy = true, collection = "inventories")
-    private Inventory inventory;
+    private String inventoryId;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

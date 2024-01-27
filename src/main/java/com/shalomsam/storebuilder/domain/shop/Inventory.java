@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.util.List;
@@ -25,18 +26,15 @@ public class Inventory {
     @JsonProperty("_id")
     private String id;
 
-    @Field("productVariantId")
-    @DocumentReference
+    private String productVariantId;
+    @Transient
     private ProductVariant productVariant;
 
-    private StockLocation location;
+    private String stockLocationId;
+    @Transient
+    private StockLocation stockLocation;
 
     private Integer stockCount;
-
-    @ReadOnlyProperty
-    @Field("orderIds")
-    @DocumentReference(lookup = "{'inventory': ?#{#self.id} }")
-    private List<Order> orders;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

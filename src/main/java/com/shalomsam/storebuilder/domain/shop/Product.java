@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.*;
@@ -22,7 +23,7 @@ import java.util.List;
 public class Product {
 
     @Id
-    @MongoId(targetType = FieldType.STRING)
+    @MongoId
     @Field(name = "_id")
     @JsonProperty("_id")
     private String id;
@@ -39,14 +40,13 @@ public class Product {
     @Indexed
     private String modelName;
 
-    @Indexed
-    @Field("categoryIds")
-    @DocumentReference
+    // root categories
+    @Transient
     private List<Category> categories;
+    @Indexed
+    private List<String> categoryIds;
 
-    @Field("productVariantIds")
-    @ReadOnlyProperty
-    @DocumentReference(lookup = "{'product': ?#{#self.id} }")
+    @Transient
     private List<ProductVariant> productVariants;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)

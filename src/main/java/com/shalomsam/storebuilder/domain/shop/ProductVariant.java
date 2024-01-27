@@ -8,11 +8,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.List;
+import java.util.Locale;
 
 @Data
 @Builder
@@ -27,9 +30,9 @@ public class ProductVariant {
     @JsonProperty("_id")
     private String id;
 
-    @Field("productId")
-    @DocumentReference(lazy = true, collection = "products")
+    @Transient
     private Product product;
+    private String productId;
 
     @Indexed(unique = true)
     private String sku;
@@ -37,13 +40,17 @@ public class ProductVariant {
     @Indexed(unique = true)
     private String upc;
 
-    @Field("sellerId")
-    @DocumentReference(collection = "sellers")
+    @Transient
     private Seller seller;
+    private String sellerId;
 
     private ProductCondition condition;
 
     private List<ProductAttribute> attributes;
+
+    @Transient
+    private Currency currency = Currency.getInstance(Locale.CANADA);
+    private String currencyCode = currency.getCurrencyCode();
 
     @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal listPrice;
@@ -54,17 +61,13 @@ public class ProductVariant {
     @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal bulkPrice;
 
-    @Field("inventoryIds")
-    @DocumentReference(lazy = true)
+    @Transient
     private List<Inventory> inventoryList;
 
-    @ReadOnlyProperty
-    @Field("discountIds")
-    @DocumentReference(lazy = true)
+    @Transient
     private List<Discount> discounts;
 
-    @Field("offerIds")
-    @DocumentReference
+    @Transient
     private List<Offer> offers;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)

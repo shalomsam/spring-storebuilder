@@ -1,8 +1,14 @@
 package com.shalomsam.storebuilder.service;
 
-import com.shalomsam.storebuilder.domain.shop.Order;
+import com.shalomsam.storebuilder.domain.shop.*;
+import com.shalomsam.storebuilder.domain.user.Customer;
 import com.shalomsam.storebuilder.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -15,8 +21,11 @@ public class OrderServiceImpl implements DomainService<Order> {
 
     private final OrderRepository repository;
 
-    public OrderServiceImpl(OrderRepository repository) {
+    private final ReactiveMongoTemplate mongoTemplate;
+
+    public OrderServiceImpl(OrderRepository repository, ReactiveMongoTemplate mongoTemplate) {
         this.repository = repository;
+        this.mongoTemplate = mongoTemplate;
     }
 
     @Override
@@ -26,7 +35,7 @@ public class OrderServiceImpl implements DomainService<Order> {
 
     @Override
     public Mono<Order> getById(String id) {
-        return repository.findById(id);
+        return repository.findById(id).flatMap(this::zipWithRelatedEntities);
     }
 
     @Override
@@ -36,22 +45,35 @@ public class OrderServiceImpl implements DomainService<Order> {
 
     @Override
     public Mono<Order> updateById(String id, Order entity) {
-        return repository.findById(id)
-            .map(order -> {
-                if (entity.getCustomer() != null) order.setCustomer(entity.getCustomer());
-                if (entity.getSeller() != null) order.setSeller(entity.getSeller());
-                if (entity.getOrderStatus() != null) order.setOrderStatus(entity.getOrderStatus());
-                if (entity.getCartItems() != null) order.getCartItems().addAll(entity.getCartItems());
-                if (entity.getCartTotal() != null) order.setCartTotal(entity.getCartTotal());
-                if (entity.getTaxes() != null) order.setTaxes(entity.getTaxes());
-                if (entity.getGrandTotal() != null) order.setGrandTotal(entity.getGrandTotal());
-                if (entity.getTransactions() != null) order.getTransactions().addAll(entity.getTransactions());
-                if (entity.getShippingAddress() != null) order.setShippingAddress(entity.getShippingAddress());
-                if (entity.getInventory() != null) order.setInventory(entity.getInventory());
+        Query query = Query.query(Criteria.where("_id").is(id));
+        Update update = new Update();
 
-                return order;
-            })
-            .flatMap(repository::save);
+        if (entity.getCustomerId() != null) update.set("customerId", entity.getCustomerId());
+        if (entity.getSellerId() != null) update.set("sellerId", entity.getSellerId());
+        if (entity.getOrderStatus() != null) update.set("orderStatus", entity.getOrderStatus());
+        if (entity.getCartId() != null) update.set("cartId", entity.getCartId());
+        if (entity.getCartTotal() != null) update.set("cartTotal", entity.getCartTotal());
+        // enable add / modify for lists?
+        if (entity.getDiscounts() != null) update.set("discounts", entity.getDiscounts());
+        if (entity.getTaxes() != null) update.set("taxes", entity.getTaxes());
+        if (entity.getGrandTotal() != null) update.set("grandTotal", entity.getGrandTotal());
+        if (entity.getCustomerId() != null) update.set("customerId", entity.getCustomerId());
+        if (entity.getSellerId() != null) update.set("sellerId", entity.getSellerId());
+        if (entity.getInventoryId() != null) update.set("inventoryId", entity.getInventoryId());
+        if (entity.getShippingDetailsId() != null) update.set("shippingDetailsId", entity.getShippingDetailsId());
+//        if (entity.getShippingMethod() != null) update.set("shippingMethod", entity.getShippingMethod());
+//        if (entity.getShippingDeadline() != null) update.set("shippingDeadline", entity.getShippingDeadline());
+//        if (entity.getShippingCarrierId() != null) update.set("shippingCarrierId", entity.getShippingCarrierId());
+//        if (entity.getShippingLabelImgUrl() != null) update.set("shippingLabelImgUrl", entity.getShippingLabelImgUrl());
+//        if (entity.getShippingAddressId() != null) update.set("shippingAddressId", entity.getShippingAddressId());
+
+        return mongoTemplate.findAndModify(
+            query,
+            update,
+            new FindAndModifyOptions().returnNew(true),
+            Order.class
+        )
+        .flatMap(this::zipWithRelatedEntities);
     }
 
     @Override
@@ -72,5 +94,24 @@ public class OrderServiceImpl implements DomainService<Order> {
     @Override
     public Mono<Long> getCount() {
         return repository.count();
+    }
+
+    private Mono<Order> zipWithRelatedEntities(Order order) {
+        Mono<Cart> cartMono = mongoTemplate.findById(order.getCartId(), Cart.class);
+        Mono<Customer> customerMono = mongoTemplate.findById(order.getCustomerId(), Customer.class);
+        Mono<Seller> sellerMono = mongoTemplate.findById(order.getSellerId(), Seller.class);
+        Mono<Inventory> inventoryMono = mongoTemplate.findById(order.getInventoryId(), Inventory.class);
+        Mono<ShippingDetails> shippingDetailsMono = mongoTemplate.findById(order.getShippingDetailsId(), ShippingDetails.class);
+
+        return Mono.zip(cartMono, customerMono, sellerMono, inventoryMono, shippingDetailsMono)
+            .map(tuple -> {
+                order.setCart(tuple.getT1());
+                order.setCustomer(tuple.getT2());
+                order.setSeller(tuple.getT3());
+                order.setInventory(tuple.getT4());
+                order.setShippingDetails(tuple.getT5());
+
+                return order;
+            });
     }
 }

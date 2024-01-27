@@ -64,7 +64,7 @@ public class CategoryMockGeneratorService implements MockGeneratorService<Catego
                     .imageUrl(String.format("http:/test.com/images/%s.png", categoryNameSlug))
                     .nameSlug(categoryNameSlug)
                     .isActive(true)
-                    .parentCategories(null)
+                    .parentCategoryIds(null)
                     .build();
 
 //                category.setChildCategories(generateMockSubCategories(category, size/2));

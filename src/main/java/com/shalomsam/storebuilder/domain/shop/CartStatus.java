@@ -6,7 +6,8 @@ import lombok.Getter;
 public enum CartStatus {
     INITIAL("initial"),
     STORED("stored"),
-    COMPLETED("completed");
+    COMPLETED("completed"),
+    ABANDONED("abandoned");
 
     private final String displayName;
 

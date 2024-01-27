@@ -1,5 +1,9 @@
 package com.shalomsam.storebuilder;
 
+import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 import com.shalomsam.storebuilder.config.JacksonZonedDateTimeConfig;
 import com.shalomsam.storebuilder.testUtils.MockGeneratorService;
 import com.shalomsam.storebuilder.testUtils.MockGeneratorConfig;
@@ -28,6 +32,7 @@ import org.testcontainers.containers.Container.ExecResult;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt;
 
@@ -55,10 +60,13 @@ public class BaseIntegrationTest {
 
     public static final SecurityMockServerConfigurers.JwtMutator AUTHORITIES = mockJwt().authorities(new SimpleGrantedAuthority("user"));
 
+    public static final Consumer<CreateContainerCmd> cmd = e -> e.withPortBindings(new PortBinding(Ports.Binding.bindPort(MONGO_PORT), new ExposedPort(MONGO_PORT)));
+
     @Container
     private static final GenericContainer<?> mongoDbContainer = new GenericContainer<>(DockerImageName.parse("mongo:latest"))
             .withAccessToHost(true)
             .withExposedPorts(MONGO_PORT)
+            .withCreateContainerCmdModifier(cmd)
             .withEnv("MONGO_INIT_DATABASE", "storebuilder-test")
             .withFileSystemBind(
                     MountableFile.forHostPath("src/test/resources/stubs/").getResolvedPath(),

@@ -1,6 +1,7 @@
 package com.shalomsam.storebuilder.domain.shop;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mongodb.lang.Nullable;
 import com.shalomsam.storebuilder.domain.AuditMetadata;
 import com.shalomsam.storebuilder.domain.SeoMetaData;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -18,7 +20,6 @@ import java.util.List;
 @NoArgsConstructor
 @Document
 public class Category {
-
     @Id
     @MongoId
     @Field(name = "_id")
@@ -35,13 +36,11 @@ public class Category {
 
     private SeoMetaData seoMetaData;
 
-    @Field("parentCategoryIds")
-    @DocumentReference(lazy = true)
-    private List<Category> parentCategories;
+    @Nullable
+    private Set<String> parentCategoryIds;
 
-    @Field("childCategoryIds")
-    @DocumentReference(lazy = true)
-    private List<Category> childCategories;
+    @Nullable
+    private Set<String> childCategoryIds;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

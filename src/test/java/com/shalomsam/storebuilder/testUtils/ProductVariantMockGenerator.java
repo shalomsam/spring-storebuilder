@@ -33,11 +33,14 @@ public class ProductVariantMockGenerator implements MockGeneratorService<Product
 
     @Getter
     @Setter
-    private static Product selectedProduct = null;
+    List<ProductVariant> productVariants = new ArrayList<>();
 
+    @Override
     public List<ProductVariant> generateMock(int size) {
-        List<ProductVariant> productVariants = new ArrayList<>();
+        return productVariants;
+    }
 
+    public List<ProductVariant> generateMock(int size, Product product) {
         for (int i = 0; i < size; i++) {
             BigDecimal listPrice = BigDecimal.valueOf(faker.number().randomDouble(2, 50, 5000));
             BigDecimal salePrice = BigDecimal.valueOf(faker.number().randomDouble(2, 50, listPrice.intValue()));
@@ -56,10 +59,7 @@ public class ProductVariantMockGenerator implements MockGeneratorService<Product
             // can't link product and variant directly as Jackson will produce
             // infinite recursion. Hence, the linking will have to happen after
             // initial data load. So for now we'll store the mapping in memory
-            if (getSelectedProduct() == null) {
-                throw new RuntimeException("Product must be set before `getSelectedProduct` is called. Got null.");
-            }
-            String productId = getSelectedProduct().getId();
+            String productId = product.getId();
             String variantId = productVariant.getId();
             if (!productToVariantMap.containsKey(productId)) {
                 productToVariantMap.put(productId, Collections.singletonList(variantId));

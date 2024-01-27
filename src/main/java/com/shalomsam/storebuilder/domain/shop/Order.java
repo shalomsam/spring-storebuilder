@@ -1,20 +1,21 @@
 package com.shalomsam.storebuilder.domain.shop;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.mongodb.lang.Nullable;
+import com.mongodb.lang.NonNull;
 import com.shalomsam.storebuilder.domain.*;
 import com.shalomsam.storebuilder.domain.user.Customer;
-import com.shalomsam.storebuilder.domain.user.CustomerAddress;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.Currency;
 import java.util.List;
+import java.util.Locale;
 
 @Data
 @Builder
@@ -30,48 +31,38 @@ public class Order {
 
     private OrderStatus orderStatus;
 
-    private List<CartItem> cartItems;
+    @Transient
+    private Cart cart;
+    private String cartId;
 
-    @Field(targetType = FieldType.DECIMAL128)
-    private BigDecimal cartTotal;
+    @NonNull
+    private String CurrencyCode = Currency.getInstance(Locale.CANADA).getCurrencyCode();
 
     private List<PriceSummary> discounts;
 
     private List<PriceSummary> taxes;
 
     @Field(targetType = FieldType.DECIMAL128)
+    private BigDecimal cartTotal;
+
+    @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal grandTotal;
 
-    private List<Transaction> transactions;
-
-    private ShippingMethod shippingMethod;
-
-    private LocalDate shippingDeadline;
-
-    @Field("deliveryProviderId")
-    private ShippingCarrier deliveryProvider;
-
-    @Nullable
-    private String shippingLabelImgUrl;
-
-    @Nullable
-    private String trackingCode;
-
-    @Field("customerId")
-    @DocumentReference
+    @Transient
     private Customer customer;
+    private String customerId;
 
-    @Field("sellerId")
-    @DocumentReference
+    @Transient
     private Seller seller;
+    private String sellerId;
 
-    @Field("addressId")
-    @DocumentReference
-    private CustomerAddress shippingAddress;
-
-    @Field("inventoryId")
-    @DocumentReference(lazy = true)
+    @Transient
     private Inventory inventory;
+    private String inventoryId;
+
+    @Transient
+    private ShippingDetails shippingDetails;
+    private String shippingDetailsId;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

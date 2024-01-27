@@ -16,7 +16,7 @@ import java.util.Map;
 @Component
 @TestComponent
 public class MockDataGenerator {
-    private final List<MockGeneratorService<?>> domainServices;
+    private final List<MockGeneratorService<?>> mockGeneratorServices;
 
     private final ResourceLoader resourceLoader;
 
@@ -25,11 +25,11 @@ public class MockDataGenerator {
     private final Map<String, List<?>> entityMap = new HashMap<>();
 
     public MockDataGenerator(
-            List<MockGeneratorService<?>> domainServices,
+            List<MockGeneratorService<?>> mockGeneratorServices,
             ResourceLoader resourceLoader,
             MockGeneratorConfig config
     ) {
-        this.domainServices = domainServices;
+        this.mockGeneratorServices = mockGeneratorServices;
         this.resourceLoader = resourceLoader;
         this.mockGeneratorConfig = config;
     }
@@ -40,19 +40,21 @@ public class MockDataGenerator {
         // check if json files exist in stubs folder
         Resource resource = resourceLoader.getResource(mockGeneratorConfig.getStubsDirectoryPath() + "/*.json");
 
-        if (!resource.exists()) {
-            // get all domain classes
-            domainServices.forEach(domainService -> {
-                try {
-                    List<?> entities = domainService.generateMock(size);
+        mockGeneratorServices.forEach(domainService -> {
+            try {
+                List<?> entities = domainService.generateMock(size);
 
-                    entityMap.put(domainService.getCollectionName(), entities);
+                entityMap.put(domainService.getCollectionName(), entities);
 
+                if (!resource.exists() && mockGeneratorConfig.isShouldWriteMockDataToFile()) {
+                    // get all domain classes
                     domainService.writeMockToJsonFile(entityMap);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
                 }
-            });
-        }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+
     }
 }

@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.math.BigInteger;
@@ -22,11 +23,11 @@ public class PaymentMethod {
     @MongoId
     @Field(name = "_id")
     @JsonProperty("_id")
-    private ObjectId id;
+    private String id;
 
-    @Field("customerId")
-    @DocumentReference
+    @Transient
     private Customer customer;
+    private String customerId;
 
     @Field("paymentMethodType")
     private String paymentMethodType;

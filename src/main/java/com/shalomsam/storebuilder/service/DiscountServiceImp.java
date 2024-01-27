@@ -1,8 +1,15 @@
 package com.shalomsam.storebuilder.service;
 
+import com.shalomsam.storebuilder.domain.shop.Cart;
 import com.shalomsam.storebuilder.domain.shop.Discount;
+import com.shalomsam.storebuilder.domain.shop.ProductVariant;
 import com.shalomsam.storebuilder.repository.DiscountRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -15,8 +22,11 @@ public class DiscountServiceImp implements DomainService<Discount> {
 
     private final DiscountRepository repository;
 
-    public DiscountServiceImp(DiscountRepository repository) {
+    private final ReactiveMongoTemplate mongoTemplate;
+
+    public DiscountServiceImp(DiscountRepository repository, ReactiveMongoTemplate mongoTemplate) {
         this.repository = repository;
+        this.mongoTemplate = mongoTemplate;
     }
 
     @Override
@@ -26,7 +36,7 @@ public class DiscountServiceImp implements DomainService<Discount> {
 
     @Override
     public Mono<Discount> getById(String id) {
-        return repository.findById(id);
+        return repository.findById(id).flatMap(this::zipWithRelatedEntities);
     }
 
     @Override
@@ -36,25 +46,28 @@ public class DiscountServiceImp implements DomainService<Discount> {
 
     @Override
     public Mono<Discount> updateById(String id, Discount entity) {
-        return repository.findById(id)
-            .map(discount -> {
+        Query query = Query.query(Criteria.where("_id").is(id));
+        Update update = new Update();
 
-                if (entity.getProductVariant() != null) discount.setProductVariant(entity.getProductVariant());
-                if (entity.getTitle() != null) discount.setTitle(entity.getTitle());
-                if (entity.getDescription() != null) discount.setDescription(entity.getDescription());
-                if (entity.getAmount() != null) discount.setAmount(entity.getAmount());
-                if (entity.getPercentage() != null) discount.setPercentage(entity.getPercentage());
-                if (entity.getStartDateTime() != null) discount.setStartDateTime(entity.getStartDateTime());
-                if (entity.getEndDateTime() != null) discount.setEndDateTime(entity.getEndDateTime());
+        if (entity.getProductVariantId() != null) update.set("productVariantId", entity.getProductVariantId());
+        if (entity.getTitle() != null) update.set("title", entity.getTitle());
+        if (entity.getDescription() != null) update.set("description", entity.getDescription());
+        if (entity.getAmount() != null) update.set("amount", entity.getAmount());
+        if (entity.getPercentage() != null) update.set("percentage", entity.getPercentage());
+        if (entity.getStartDateTime() != null) update.set("startDateTime", entity.getStartDateTime());
+        if (entity.getEndDateTime() != null) update.set("endDateTime", entity.getEndDateTime());
 
-                return discount;
-            })
-            .flatMap(repository::save);
+        return mongoTemplate.findAndModify(
+            query,
+            update,
+            new FindAndModifyOptions().returnNew(true),
+            Discount.class
+        ).flatMap(this::zipWithRelatedEntities);
     }
 
     @Override
     public Flux<Discount> updateMany(List<Discount> entities) {
-        return repository.saveAll(entities);
+        return repository.saveAll(entities).flatMap(this::zipWithRelatedEntities);
     }
 
     @Override
@@ -70,5 +83,14 @@ public class DiscountServiceImp implements DomainService<Discount> {
     @Override
     public Mono<Long> getCount() {
         return repository.count();
+    }
+
+    private Mono<Discount> zipWithRelatedEntities(Discount discount) {
+        Mono<ProductVariant> productVariantMono = mongoTemplate.findById(discount.getProductVariantId(), ProductVariant.class);
+
+        return productVariantMono.map(productVariant -> {
+           discount.setProductVariant(productVariant);
+           return discount;
+        });
     }
 }

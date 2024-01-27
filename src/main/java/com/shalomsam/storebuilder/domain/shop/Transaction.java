@@ -10,9 +10,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 
 @Data
 @Builder
@@ -26,17 +28,21 @@ public class Transaction {
     @JsonProperty("_id")
     private ObjectId id;
 
-    @Field("customerId")
-    @DocumentReference
+    @Transient
     private Customer customer;
+    private String customerId;
 
-    @Field("orderId")
-    @DocumentReference
+    @Transient
     private Order order;
+    private String orderId;
 
-    @Field("paymentMethodId")
-    @DocumentReference
+    @Transient
     private PaymentMethod paymentMethod;
+    private String paymentMethodId;
+
+    @Transient
+    private Currency currency;
+    private String currencyCode;
 
     @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal amount;

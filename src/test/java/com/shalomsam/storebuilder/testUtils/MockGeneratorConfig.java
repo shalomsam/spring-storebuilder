@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "mocks")
 public class MockGeneratorConfig {
+    private boolean shouldWriteMockToDatabase;
     private String stubsDirectoryPath;
     private boolean shouldWriteMockDataToFile;
 }

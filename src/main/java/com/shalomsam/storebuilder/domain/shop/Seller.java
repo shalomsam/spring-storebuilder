@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.util.List;
@@ -25,9 +26,9 @@ public class Seller {
     @JsonProperty("_id")
     private String id;
 
-    @Field(name = "organizationId")
-    @DocumentReference
+    @Transient
     private Organization organization;
+    private String organizationId;
 
     private String name;
 
@@ -39,8 +40,7 @@ public class Seller {
 
     private ContactInfo contactInfo;
 
-    @Field(name = "offerIds")
-    @DocumentReference
+    @Transient
     private List<Offer> offers;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)

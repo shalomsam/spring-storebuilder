@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.*;
 
 import java.io.Serializable;
@@ -31,9 +32,6 @@ public class Organization implements Serializable {
     private String shopUrl;
 
     private ContactInfo contactInfo;
-
-    @DocumentReference(lazy = true)
-    private List<Seller> sellers;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)
     private AuditMetadata auditMetadata;

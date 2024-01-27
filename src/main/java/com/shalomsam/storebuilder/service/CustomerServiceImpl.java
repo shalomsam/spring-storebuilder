@@ -1,8 +1,16 @@
 package com.shalomsam.storebuilder.service;
 
+import com.shalomsam.storebuilder.domain.Organization;
 import com.shalomsam.storebuilder.domain.user.Customer;
+import com.shalomsam.storebuilder.domain.user.CustomerAccess;
+import com.shalomsam.storebuilder.domain.user.CustomerAddress;
 import com.shalomsam.storebuilder.repository.CustomerRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -15,8 +23,11 @@ public class CustomerServiceImpl implements DomainService<Customer> {
 
     private final CustomerRepository repository;
 
-    public CustomerServiceImpl(CustomerRepository customerRepository) {
+    private final ReactiveMongoTemplate mongoTemplate;
+
+    public CustomerServiceImpl(CustomerRepository customerRepository, ReactiveMongoTemplate mongoTemplate) {
         this.repository = customerRepository;
+        this.mongoTemplate = mongoTemplate;
     }
 
     @Override
@@ -26,30 +37,34 @@ public class CustomerServiceImpl implements DomainService<Customer> {
 
     @Override
     public Mono<Customer> getById(String id) {
-        return repository.findById(id);
+        return repository.findById(id).flatMap(this::zipWithRelatedEntities);
     }
 
     @Override
     public Mono<Customer> create(Customer entity) {
-        return repository.save(entity);
+        return repository.save(entity).flatMap(this::zipWithRelatedEntities);
     }
 
     @Override
     public Mono<Customer> updateById(String id, Customer entity) {
-        return repository.findById(id)
-            .map(customer -> {
+        Query query = Query.query(Criteria.where("_id").is(id));
+        Update update = new Update();
 
-                if (entity.getCustomerAccess() != null) customer.setCustomerAccess(entity.getCustomerAccess());
-                // Todo: Test if cascading save implementation is needed for lists and/or Objects
-                if (entity.getAddresses() != null) customer.getAddresses().addAll(entity.getAddresses());
-                if (entity.getOrders() != null) customer.getOrders().addAll(entity.getOrders());
-                if (entity.getPaymentMethods() != null) customer.getPaymentMethods().addAll(entity.getPaymentMethods());
-                if (entity.getReviews() != null) customer.getReviews().addAll(entity.getReviews());
-                if (entity.getTransactions() != null) customer.getTransactions().addAll(entity.getTransactions());
+        if (entity.getFirstName() != null) update.set("firstName", entity.getFirstName());
+        if (entity.getLastName() != null) update.set("lastName", entity.getLastName());
+        if (entity.getEmail() != null) update.set("email", entity.getEmail());
+        if (entity.getAuthToken() != null) update.set("authToken", entity.getAuthToken());
+        if (entity.getPhoneNumber() != null) update.set("phoneNumber", entity.getPhoneNumber());
+        if (entity.getOrganizationId() != null) update.set("organizationId", entity.getOrganizationId());
+        if (entity.getCustomerAccessId() != null) update.set("customerAccessId", entity.getCustomerAccessId());
 
-                return customer;
-            })
-            .flatMap(repository::save);
+        return mongoTemplate.findAndModify(
+            query,
+            update,
+            new FindAndModifyOptions().returnNew(true),
+            Customer.class
+        ).flatMap(this::zipWithRelatedEntities);
+
     }
 
     @Override
@@ -70,5 +85,16 @@ public class CustomerServiceImpl implements DomainService<Customer> {
     @Override
     public Mono<Long> getCount() {
         return repository.count();
+    }
+
+    public Mono<Customer> zipWithRelatedEntities(Customer customer) {
+        Mono<CustomerAccess> customerAccessMono = mongoTemplate.findById(customer.getCustomerAccessId(), CustomerAccess.class);
+        Mono<Organization> organizationMono = mongoTemplate.findById(customer.getOrganizationId(), Organization.class);
+
+        return Mono.zip(customerAccessMono, organizationMono, (c, o) -> {
+            customer.setCustomerAccess(c);
+            customer.setOrganization(o);
+            return customer;
+        });
     }
 }
