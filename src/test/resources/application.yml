@@ -2,8 +2,30 @@ spring:
   cloud:
     vault:
       enabled: false
+  application:
+    name: storebuilder
+  data:
+    mongodb:
+      database: storebuilder-test
+  task:
+    execution:
+      shutdown:
+        await-termination: true
+        await-termination-period: 60
 server:
+  shutdown: graceful
   port: 8081
 mocks:
+  shouldWriteMockToDatabase: true
   stubsDirectoryPath: "/src/test/resources/stubs"
-  shouldWriteMockDataToFile: true
+  shouldWriteMockDataToFile: false
+
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: DEBUG
+              ReactiveMongoTemplate: DEBUG

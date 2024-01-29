@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -22,7 +22,6 @@ public class OrganizationMockGeneratorService implements MockGeneratorService<Or
 
     @Autowired
     public ObjectMapper objectMapper;
-
 
     @Override
     public String getCollectionName() {
@@ -69,7 +68,7 @@ public class OrganizationMockGeneratorService implements MockGeneratorService<Or
     }
 
     @Override
-    public void buildMockRelationShips(ApplicationContext applicationContext) {
-
+    public void buildMockRelationShips(ReactiveMongoTemplate mongoTemplate) {
+        // no relationships at the time of writing
     }
 }

@@ -1,7 +1,9 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.shalomsam.storebuilder.domain.AuditMetadata;
+import com.shalomsam.storebuilder.domain.shop.Product;
 import com.shalomsam.storebuilder.domain.shop.ProductVariant;
+import com.shalomsam.storebuilder.domain.shop.Seller;
 import com.shalomsam.storebuilder.domain.shop.StockLocation;
 import com.shalomsam.storebuilder.domain.user.Address;
 import net.datafaker.Faker;
@@ -79,12 +81,12 @@ public final class MockHelper {
             .build();
     }
 
-    public static String generateMockSku(ProductVariant productVariant) {
+    public static String generateMockSku(ProductVariant productVariant, Product product, Seller seller) {
         return String.format(
             "%.5s-%.5s-%.5s",
-            productVariant.getProduct().getBrandName().toUpperCase(),
+            product.getBrandName().toUpperCase(),
             productVariant.getAttributes().stream().map(productAttribute -> String.valueOf(productAttribute.getName().charAt(0) + productAttribute.getValue().charAt(0))).collect(Collectors.joining("")),
-            productVariant.getSeller().getId()
+            seller.getId()
         );
     }
 }

@@ -1,19 +1,18 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shalomsam.storebuilder.domain.shop.Inventory;
 import com.shalomsam.storebuilder.domain.shop.Offer;
 import com.shalomsam.storebuilder.domain.shop.OfferStatus;
 import com.shalomsam.storebuilder.domain.shop.ProductVariant;
 import com.shalomsam.storebuilder.domain.shop.Seller;
-import com.shalomsam.storebuilder.repository.OfferRepository;
-import com.shalomsam.storebuilder.repository.ProductVariantRepository;
-import com.shalomsam.storebuilder.repository.SellerRepository;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,38 +56,26 @@ public class OfferMockGeneratorService implements MockGeneratorService<Offer> {
 
 
     @Override
-    public void buildMockRelationShips(ApplicationContext applicationContext) {
-        OfferRepository offerRepository = applicationContext.getBean(OfferRepository.class);
-        ProductVariantRepository variantRepository = applicationContext.getBean(ProductVariantRepository.class);
-        SellerRepository sellerRepository = applicationContext.getBean(SellerRepository.class);
+    public void buildMockRelationShips(ReactiveMongoTemplate mongoTemplate) {
+        Flux<Offer> offerFlux = mongoTemplate.findAll(Offer.class);
+        Mono<List<ProductVariant>> variantsMono = mongoTemplate.findAll(ProductVariant.class).collectList();
+        Mono<List<Seller>> sellersMono = mongoTemplate.findAll(Seller.class).collectList();
+        Mono<List<Inventory>> inventoryMono = mongoTemplate.findAll(Inventory.class).collectList();
 
-        Flux<Offer> offerFlux = offerRepository.findAll();
-        List<ProductVariant> productVariants = variantRepository.findAll().toStream().toList();
-        List<Seller> sellers = sellerRepository.findAll().toStream().toList();
+        Mono.zip(variantsMono, sellersMono, inventoryMono)
+            .flatMapMany(tuple -> {
+                return offerFlux.map(offer -> {
+                    ProductVariant randomVariant = faker.options().nextElement(tuple.getT1());
+                    Seller randomSeller = faker.options().nextElement(tuple.getT2());
+                    Inventory randomInventory = faker.options().nextElement(tuple.getT3());
 
-        offerFlux.map(offer -> {
-            ProductVariant randomVariant = faker.options().nextElement(productVariants);
-            Seller randomSeller = faker.options().nextElement(sellers);
-
-            offer.setProductVariant(randomVariant);
-            offer.setSeller(randomSeller);
-
-            randomVariant.getOffers().add(offer);
-            variantRepository.save(randomVariant);
-
-            randomSeller.getOffers().add(offer);
-            sellerRepository.save(randomSeller);
-
-            return offer;
-        })
-        .flatMap(offerRepository::save)
-        .flatMap((offer) -> {
-            productVariants.forEach(productVariant -> {
-                productVariant.setSku(MockHelper.generateMockSku(productVariant));
-                variantRepository.save(productVariant);
-            });
-
-            return null;
-        });
+                    offer.setProductVariantId(randomVariant.getId());
+                    offer.setSellerId(randomSeller.getId());
+                    offer.setInventoryId(randomInventory.getId());
+                    return offer;
+                })
+                .flatMap(mongoTemplate::save);
+            })
+            .blockFirst();
     }
 }

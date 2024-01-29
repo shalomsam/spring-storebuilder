@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.*;
 
 @Data
@@ -23,10 +24,16 @@ public class Offer {
 
     private OfferStatus offerStatus;
 
+    @Transient
+    private Seller seller;
     private String sellerId;
 
+    @Transient
+    private ProductVariant productVariant;
     private String productVariantId;
 
+    @Transient
+    private Inventory inventory;
     private String inventoryId;
 
     @Unwrapped(onEmpty = Unwrapped.OnEmpty.USE_NULL)

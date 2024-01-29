@@ -14,21 +14,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
-import org.testcontainers.containers.Container.ExecResult;
 
 import java.io.IOException;
 import java.util.List;
@@ -80,25 +80,21 @@ public class BaseIntegrationTest {
 
     @BeforeAll
     public static void setUp(
-            @Autowired List<MockGeneratorService<?>> mockGeneratorServices,
-            @Autowired ResourceLoader resourceLoader,
-            @Autowired MockGeneratorConfig mockGeneratorConfig,
-            @Autowired ApplicationContext applicationContext
+        @Autowired List<MockGeneratorService<?>> mockGeneratorServices,
+        @Autowired ResourceLoader resourceLoader,
+        @Autowired MockGeneratorConfig mockGeneratorConfig,
+        @Autowired ReactiveMongoTemplate mongoTemplate
     ) throws IOException, InterruptedException {
+        mongoDbContainer.start();
+        mongoDbContainer.waitingFor(
+            Wait.forHealthcheck()
+        );
 
         // Generate Mock data if not exists
-        MockDataGenerator mockDataGenerator = new MockDataGenerator(mockGeneratorServices, resourceLoader, mockGeneratorConfig);
+        MockDataGenerator mockDataGenerator = new MockDataGenerator(mockGeneratorServices, resourceLoader, mockGeneratorConfig, mongoTemplate);
         mockDataGenerator.generateMockData(10);
 
-        mongoDbContainer.setPortBindings(List.of(MONGO_PORT + ":" + MONGO_PORT));
-        mongoDbContainer.start();
-
-        ExecResult result = mongoDbContainer.execInContainer("bash", "/mongoInit.sh");
-        log.info("Exec stdout:\n {}", result.getStdout());
-        log.info("Exec stderr:\n {}", result.getStderr());
-        log.info("exit code={}", result.getExitCode());
-
-        mockGeneratorServices.forEach(mockGeneratorService -> mockGeneratorService.buildMockRelationShips(applicationContext));
+        mockGeneratorServices.forEach(mockGeneratorService -> mockGeneratorService.buildMockRelationShips(mongoTemplate));
     }
 
     @DynamicPropertySource

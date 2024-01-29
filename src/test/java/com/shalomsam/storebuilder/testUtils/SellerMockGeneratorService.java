@@ -6,14 +6,13 @@ import com.shalomsam.storebuilder.domain.shop.Seller;
 import com.shalomsam.storebuilder.domain.shop.SellerType;
 import com.shalomsam.storebuilder.domain.user.Address;
 import com.shalomsam.storebuilder.domain.user.ContactInfo;
-import com.shalomsam.storebuilder.repository.OrganizationRepository;
-import com.shalomsam.storebuilder.repository.SellerRepository;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +47,6 @@ public class SellerMockGeneratorService implements MockGeneratorService<Seller> 
             addresses.add(MockHelper.generateMockAddress());
             Seller seller = Seller.builder()
                 .id(new ObjectId().toString())
-                //.organization()
                 .name(faker.expression("Seller: #{commerce.vendor}"))
                 .shopSubDomain(faker.internet().domainWord())
                 .sellerType(faker.options().option(SellerType.class))
@@ -61,7 +59,6 @@ public class SellerMockGeneratorService implements MockGeneratorService<Seller> 
                         .addresses(addresses)
                         .build()
                 )
-                //.offers
                 .auditMetadata(MockHelper.generateMockAuditMetadata())
                 .build();
 
@@ -72,23 +69,18 @@ public class SellerMockGeneratorService implements MockGeneratorService<Seller> 
     }
 
     @Override
-    public void buildMockRelationShips(ApplicationContext applicationContext) {
-        OrganizationRepository organizationRepository = applicationContext.getBean(OrganizationRepository.class);
-        SellerRepository sellerRepository = applicationContext.getBean(SellerRepository.class);
+    public void buildMockRelationShips(ReactiveMongoTemplate mongoTemplate) {
+        Flux<Seller> sellerFlux = mongoTemplate.findAll(Seller.class);
+        Mono<List<Organization>> organizationsMono = mongoTemplate.findAll(Organization.class).collectList();
 
-        List<Organization> organizations = organizationRepository.findAll().toStream().toList();
-        Flux<Seller> sellerFlux = sellerRepository.findAll();
-
-        sellerFlux.map(seller -> {
-            Organization randomOrg = faker.options().nextElement(organizations);
-            seller.setOrganization(randomOrg);
-
-            randomOrg.getSellers().add(seller);
-            organizationRepository.save(randomOrg);
-
-            // offers are set in OfferMockGeneratorService
-            return seller;
+        organizationsMono.flatMapMany(organizations -> {
+            return sellerFlux.map(seller -> {
+                Organization randomOrg = faker.options().nextElement(organizations);
+                seller.setOrganizationId(randomOrg.getId());
+                return seller;
+            })
+            .flatMap(mongoTemplate::save);
         })
-        .flatMap(sellerRepository::save);
+        .blockFirst();
     }
 }

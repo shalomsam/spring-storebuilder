@@ -6,22 +6,21 @@ import com.shalomsam.storebuilder.domain.shop.CartItem;
 import com.shalomsam.storebuilder.domain.shop.CartStatus;
 import com.shalomsam.storebuilder.domain.shop.ProductVariant;
 import com.shalomsam.storebuilder.domain.user.Customer;
-import com.shalomsam.storebuilder.repository.CartRepository;
-import com.shalomsam.storebuilder.repository.CustomerRepository;
-import com.shalomsam.storebuilder.repository.ProductVariantRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-//@Service
+@Service
 public class CartMockGeneratorService implements MockGeneratorService<Cart> {
 
     static String COLLECTION_NAME = "carts";
@@ -61,42 +60,43 @@ public class CartMockGeneratorService implements MockGeneratorService<Cart> {
 
 
     @Override
-    public void buildMockRelationShips(ApplicationContext applicationContext) {
-        CartRepository cartRepository = applicationContext.getBean(CartRepository.class);
-        CustomerRepository customerRepository = applicationContext.getBean(CustomerRepository.class);
-        List<Customer> customerList = customerRepository.findAll().toStream().toList();
+    public void buildMockRelationShips(ReactiveMongoTemplate mongoTemplate) {
+        Mono<List<Customer>> customersMono = mongoTemplate.findAll(Customer.class).collectList();
+        Mono<List<ProductVariant>> productVariantsMono = mongoTemplate.findAll(ProductVariant.class).collectList();
+        Flux<Cart> cartFlux = mongoTemplate.findAll(Cart.class);
 
-        ProductVariantRepository variantRepository = applicationContext.getBean(ProductVariantRepository.class);
-        List<ProductVariant> productVariants = variantRepository.findAll().toStream().toList();
+        Mono.zip(customersMono, productVariantsMono)
+            .flatMapMany(tuple -> {
+                List<Customer> customers = tuple.getT1();
+                List<ProductVariant> productVariants = tuple.getT2();
 
-        Flux<Cart> cartFlux = cartRepository.findAll();
-
-        cartFlux.map(cart -> {
-            Customer randomCustomer = faker.options().nextElement(customerList);
-            cart.setCustomer(randomCustomer);
-
-            int cartCount = faker.number().numberBetween(1, 4);
-            List<CartItem> cartItems = new ArrayList<>(cartCount);
-            ProductVariant randomVariant = faker.options().nextElement(productVariants);
-            int quantity = faker.number().numberBetween(1, 10);
-
-            for (int i = 0; i < cartCount; i++) {
-                cartItems.add(
-                    CartItem.builder()
-                        .sku(randomVariant.getSku())
-                        .skuPrice(randomVariant.getListPrice())
-                        .quantity(quantity)
-                        .total(randomVariant.getListPrice().multiply(BigDecimal.valueOf(quantity)))
-                        .build()
-                );
-            }
-
-            cart.setCartItems(cartItems);
-
-            return cart;
-        })
-        .flatMap(cartRepository::save);
+                return cartFlux
+                   .map(cart -> buildCartRelationShips(cart, customers, productVariants))
+                   .flatMap(mongoTemplate::save);
+            })
+            .blockFirst();
     }
 
+    private Cart buildCartRelationShips(Cart cart, List<Customer> customers, List<ProductVariant> productVariants) {
+        Customer randomCustomer = faker.options().nextElement(customers);
+        cart.setCustomerId(randomCustomer.getId());
+        int cartCount = faker.number().numberBetween(1, 4);
+        List<CartItem> cartItems = new ArrayList<>(cartCount);
+        int quantity = faker.number().numberBetween(1, 10);
 
+        for (int i = 0; i < cartCount; i++) {
+            ProductVariant randomVariant = faker.options().nextElement(productVariants);
+            CartItem item = CartItem.builder()
+                .sku(randomVariant.getSku())
+                .skuPrice(randomVariant.getListPrice())
+                .quantity(quantity)
+                .total(randomVariant.getListPrice().multiply(BigDecimal.valueOf(quantity)))
+                .build();
+
+            cartItems.add(item);
+        }
+
+        cart.setCartItems(cartItems);
+        return cart;
+    }
 }

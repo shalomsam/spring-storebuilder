@@ -1,21 +1,21 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shalomsam.storebuilder.domain.shop.Product;
-import com.shalomsam.storebuilder.domain.shop.ProductAttribute;
-import com.shalomsam.storebuilder.domain.shop.ProductCondition;
-import com.shalomsam.storebuilder.domain.shop.ProductVariant;
+import com.shalomsam.storebuilder.domain.shop.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -25,9 +25,6 @@ public class ProductVariantMockGenerator implements MockGeneratorService<Product
 
     @Autowired
     public ObjectMapper objectMapper;
-
-    @Getter
-    private final Map<String, List<String>> productToVariantMap = new HashMap<>();
 
     private final Faker faker = new Faker();
 
@@ -47,35 +44,15 @@ public class ProductVariantMockGenerator implements MockGeneratorService<Product
             BigDecimal bulkPrice = BigDecimal.valueOf(faker.number().randomDouble(2, 50, listPrice.intValue()));
             ProductVariant productVariant = ProductVariant.builder()
                 .id(new ObjectId().toString())
-                //.product(product) <-- reason below
+                .productId(product.getId())
                 .upc(String.valueOf(faker.barcode().ean8()))
+                .condition(faker.options().option(ProductCondition.class))
                 .attributes(generateMockAttributes())
                 .listPrice(listPrice)
                 .salePrice(salePrice)
                 .bulkPrice(bulkPrice)
-                .condition(faker.options().option(ProductCondition.class))
                 .build();
 
-            // can't link product and variant directly as Jackson will produce
-            // infinite recursion. Hence, the linking will have to happen after
-            // initial data load. So for now we'll store the mapping in memory
-            String productId = product.getId();
-            String variantId = productVariant.getId();
-            if (!productToVariantMap.containsKey(productId)) {
-                productToVariantMap.put(productId, Collections.singletonList(variantId));
-            } else {
-                // ArrayList in class property is immutable, hence need to create new ArrayList
-                // before we can update its size.
-                List<String> variantIds = new ArrayList<>(productToVariantMap.get(productId));
-                variantIds.add(variantId);
-                productToVariantMap.put(productId, variantIds);
-            }
-
-            // we don't set the sku yet since in the real world the sku is created
-            // from the seller offer flow, ie when a productVariant offer is added
-            // by the seller. So in the mock generator this responsibility is in
-            // the OfferMockGeneratorService, after random offers have been linked
-            // to sellers
             productVariants.add(productVariant);
         }
 
@@ -124,7 +101,27 @@ public class ProductVariantMockGenerator implements MockGeneratorService<Product
     }
 
     @Override
-    public void buildMockRelationShips(ApplicationContext applicationContext) {
+    public void buildMockRelationShips(ReactiveMongoTemplate mongoTemplate) {
+        Mono<List<Seller>> sellersMono = mongoTemplate.findAll(Seller.class).collectList();
+        Flux<ProductVariant> variantFlux = mongoTemplate.findAll(ProductVariant.class);
 
+        sellersMono.flatMapMany(sellers -> {
+           return variantFlux.map(variant -> {
+               Seller randomSeller = faker.options().nextElement(sellers);
+               variant.setSellerId(randomSeller.getId());
+               Mono<Product> product = mongoTemplate.findById(variant.getProductId(), Product.class);
+
+               return product.zipWith(Mono.just(variant))
+                   .map(tuple -> {
+                       Product product1 = tuple.getT1();
+                       ProductVariant variant1 = tuple.getT2();
+                       variant1.setSku(MockHelper.generateMockSku(variant1, product1, randomSeller));
+
+                       return variant1;
+                   });
+           })
+           .flatMap(mongoTemplate::save);
+        })
+        .blockFirst();
     }
 }

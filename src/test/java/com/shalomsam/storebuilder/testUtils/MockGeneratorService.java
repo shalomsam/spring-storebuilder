@@ -1,10 +1,9 @@
 package com.shalomsam.storebuilder.testUtils;
 
-import com.shalomsam.storebuilder.service.DomainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -35,8 +34,8 @@ public interface MockGeneratorService<T> {
 
     ObjectMapper getObjectMapper();
 
-    default <E> void writeToDatabase(List<E> entities) {
-        log.info("Method not implemented in class {}.", getClass());
+    default void writeToDatabase(ReactiveMongoTemplate mongoTemplate, List<T> entities) {
+        mongoTemplate.insertAll(entities).blockFirst();
     }
 
     default void writeMockToJsonFile(Map<String, List<?>> entityMap) throws IOException {
@@ -60,5 +59,5 @@ public interface MockGeneratorService<T> {
         }
     }
 
-    void buildMockRelationShips(ApplicationContext applicationContext);
+    void buildMockRelationShips(ReactiveMongoTemplate reactiveMongoTemplate);
 }

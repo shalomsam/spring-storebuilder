@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.*;
@@ -50,7 +49,7 @@ public class ProductVariant {
 
     @Transient
     private Currency currency = Currency.getInstance(Locale.CANADA);
-    private String currencyCode = currency.getCurrencyCode();
+    private String currencyCode = "CAD";
 
     @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal listPrice;
