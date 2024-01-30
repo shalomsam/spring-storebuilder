@@ -1,6 +1,5 @@
 package com.shalomsam.storebuilder.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -16,15 +15,15 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 @Configuration
 @EnableReactiveMongoRepositories(basePackages = { "com.shalomsam.storebuilder.repository" })
 @EnableReactiveMongoAuditing(dateTimeProviderRef = "auditingDateTimeProvider")
 public class MongoConfig {
-
-    @Value("${spring.data.mongodb.database}")
-    private String databaseName;
 
     @Bean(name = "auditingDateTimeProvider")
     public DateTimeProvider dateTimeProvider() {

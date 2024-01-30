@@ -21,15 +21,15 @@ public class OrganizationHandlerIntegrationTest extends BaseIntegrationTest {
 
         // when - client/browser performs GET request on /api/v1/organization endpoint
         WebTestClient.ResponseSpec response = webTestClient
-                .mutateWith(csrf())
-                .mutateWith(AUTHORITIES)
-                .get()
-                .uri(uriBuilder -> uriBuilder
-                        .path(RoutesConfig.OrganizationPath)
-                        .build()
-                )
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange();
+            .mutateWith(csrf())
+            .mutateWith(AUTHORITIES)
+            .get()
+            .uri(uriBuilder -> uriBuilder
+                    .path(RoutesConfig.OrganizationPath)
+                    .build()
+            )
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange();
 
         // then - verifying that returned JSON contains list of organizations
         response

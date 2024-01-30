@@ -73,14 +73,12 @@ public class SellerMockGeneratorService implements MockGeneratorService<Seller> 
         Flux<Seller> sellerFlux = mongoTemplate.findAll(Seller.class);
         Mono<List<Organization>> organizationsMono = mongoTemplate.findAll(Organization.class).collectList();
 
-        organizationsMono.flatMapMany(organizations -> {
-            return sellerFlux.map(seller -> {
-                Organization randomOrg = faker.options().nextElement(organizations);
-                seller.setOrganizationId(randomOrg.getId());
-                return seller;
-            })
-            .flatMap(mongoTemplate::save);
+        organizationsMono.flatMapMany(organizations -> sellerFlux.map(seller -> {
+            Organization randomOrg = faker.options().nextElement(organizations);
+            seller.setOrganizationId(randomOrg.getId());
+            return seller;
         })
+        .flatMap(mongoTemplate::save))
         .blockFirst();
     }
 }

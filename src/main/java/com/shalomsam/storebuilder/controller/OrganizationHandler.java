@@ -32,16 +32,14 @@ public class OrganizationHandler {
 
     public Mono<ServerResponse> getAll(ServerRequest ignoredServerRequest) {
         log.info("OrganizationHandler getAll method called.");
-        return organizationService.getAll().collectList().flatMap(organizations -> {
-            return ServerResponse
-                .ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(
-                    new SuccessResponseDto<List<Organization>>()
-                        .addData("organizations", organizations)
-                        .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
-                );
-        });
+        return organizationService.getAll().collectList().flatMap(organizations -> ServerResponse
+            .ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(
+                new SuccessResponseDto<List<Organization>>()
+                    .addData("organizations", organizations)
+                    .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
+            ));
     }
 
     public Mono<ServerResponse> getById(ServerRequest serverRequest) {
@@ -106,10 +104,17 @@ public class OrganizationHandler {
         String id = request.pathVariable("id");
         return request
             .bodyToMono(Organization.class)
-            .flatMap(reqOrg -> {
-                Mono<Organization> updatedOrgMono = organizationService.updateById(id, reqOrg);
-                log.debug("updatedOrgMono : {} ", updatedOrgMono);
-                return updatedOrgMono;
+            .flatMap(reqOrg -> organizationService.updateById(id, reqOrg))
+            .doOnSuccess(organization -> log.info("New Organization updated: {}", organization))
+            .doOnError(e -> {
+                log.error("Failed to update organization record: message={}", e.getMessage());
+                ServerResponse
+                    .status(HttpStatusCode.valueOf(500))
+                    .bodyValue(
+                        new ErrorResponseDto()
+                            .status(ApiResponse.ApiResponseType.ERROR.getValue())
+                            .setMessage(e.getMessage())
+                    );
             })
             .flatMap(organization ->
                 {

@@ -76,14 +76,12 @@ public class CustomerMockGeneratorService implements MockGeneratorService<Custom
         Mono<List<Organization>> organizationsMono = mongoTemplate.findAll(Organization.class).collectList();
         Flux<Customer> customerFlux = mongoTemplate.findAll(Customer.class);
 
-        organizationsMono.flatMapMany(organizations -> {
-            return customerFlux.map(customer -> {
-                Organization organization = faker.options().nextElement(organizations);
-                customer.setOrganizationId(organization.getId());
-                return customer;
-            })
-            .flatMap(mongoTemplate::save);
+        organizationsMono.flatMapMany(organizations -> customerFlux.map(customer -> {
+            Organization organization = faker.options().nextElement(organizations);
+            customer.setOrganizationId(organization.getId());
+            return customer;
         })
+        .flatMap(mongoTemplate::save))
         .blockFirst();
     }
 }

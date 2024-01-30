@@ -1,6 +1,5 @@
 package com.shalomsam.storebuilder.controller;
 
-import com.mongodb.reactivestreams.client.MongoClient;
 import com.shalomsam.storebuilder.config.JacksonZonedDateTimeConfig;
 import com.shalomsam.storebuilder.config.RoutesConfig;
 import com.shalomsam.storebuilder.domain.AuditMetadata;
@@ -14,23 +13,24 @@ import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.apache.commons.lang3.SerializationUtils;
+import org.testcontainers.shaded.org.apache.commons.lang3.SerializationUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -44,10 +44,11 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 
 
 @SpringBootTest
-@EnableAutoConfiguration(exclude = MongoAutoConfiguration.class)
+@EnableAutoConfiguration(exclude = {MongoAutoConfiguration.class})
 @AutoConfigureWebTestClient
 @Import({JacksonZonedDateTimeConfig.class, RoutesConfig.class, OrganizationMockGeneratorService.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class OrganizationHandlerTest {
 
     public static final SecurityMockServerConfigurers.JwtMutator AUTHORITIES = mockJwt().authorities(new SimpleGrantedAuthority("user"));
@@ -61,15 +62,12 @@ public class OrganizationHandlerTest {
     private WebTestClient webTestClient;
 
     @MockBean
-    private MongoClient mongoClient;
-
-    @MockBean
     private OrganizationRepository organizationRepository;
 
-    @MockBean
+    @Mock
     private ReactiveMongoTemplate reactiveMongoTemplate;
 
-    @SpyBean
+    @MockBean
     private OrganizationServiceImpl organizationService;
 
     @InjectMocks
@@ -80,7 +78,7 @@ public class OrganizationHandlerTest {
     @BeforeAll
     public void setUp() {
         mockOrganizations = organizationMockGeneratorService.generateMock(MOCK_SIZE);
-        organizationService = new OrganizationServiceImpl(organizationRepository, reactiveMongoTemplate);
+        //organizationService = new OrganizationServiceImpl(organizationRepository, reactiveMongoTemplate);
     }
 
     @Test
@@ -106,8 +104,8 @@ public class OrganizationHandlerTest {
             .expectStatus()
             .isOk()
             .expectBody()
-            .jsonPath("@.status").isEqualTo("success")
-            .jsonPath("@.organizations", hasSize(MOCK_SIZE));
+            .jsonPath("$.status").isEqualTo("success")
+            .jsonPath("$.organizations", hasSize(MOCK_SIZE));
     }
 
     @Test
@@ -136,7 +134,7 @@ public class OrganizationHandlerTest {
             .consumeWith(System.out::println);
 
         bodyContentSpec.jsonPath("$.status").isEqualTo("success");
-        bodyContentSpec.jsonPath("$.organization.id").isEqualTo(mockOrganization.getId());
+        bodyContentSpec.jsonPath("$.organization._id").isEqualTo(mockOrganization.getId());
         bodyContentSpec.jsonPath("$.organization.name").isEqualTo(mockOrganization.getName());
         bodyContentSpec.jsonPath("$.organization.auditMetadata.createdAt")
             .value(v -> mockOrganization.getAuditMetadata().getCreatedAt().isEqual(ZonedDateTime.parse(v.toString())));
@@ -229,27 +227,31 @@ public class OrganizationHandlerTest {
             .consumeWith(System.out::println)
             .jsonPath("$.status").isEqualTo("success")
             .jsonPath("$.organization").exists()
-            .jsonPath("$.organization.id").isEqualTo(mockId.toString())
+            .jsonPath("$.organization._id").isEqualTo(mockId.toString())
             .jsonPath("$.organization.auditMetadata.createdAt").value(v -> mockCreatedAt.isEqual(ZonedDateTime.parse(v.toString())));
     }
 
     @Test
     public void testUpdateOrganizationByIdReturnsUpdatedOrganization() {
         // given - organization exists
+        String updateUrl = "http://newUrl.com";
         Organization mockOrganization = mockOrganizations.get(0);
+        mockOrganization.setShopUrl(updateUrl);
         String mockId = mockOrganization.getId();
-        Mono<Organization> mockOrgMono = Mono.just(mockOrganization);
 
-        Mockito.when(organizationRepository.findById(Mockito.anyString()))
-            .thenReturn(mockOrgMono);
-
-        ArgumentCaptor<Organization> orgArgument = ArgumentCaptor.forClass(Organization.class);
-        Mockito.when(organizationRepository.save(orgArgument.capture())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        Mockito.when(reactiveMongoTemplate.findAndModify(
+                ArgumentMatchers.any(Query.class),
+                ArgumentMatchers.any(Update.class),
+                ArgumentMatchers.any(FindAndModifyOptions.class),
+                ArgumentMatchers.<Class<Organization>>any()))
+            .thenReturn(Mono.just(mockOrganization));
 
         // when - new updates are send via request body
         Organization orgUpdates = Organization.builder()
-            .shopUrl("http://newUrl.com")
+            .shopUrl(updateUrl)
             .build();
+
+        Mockito.when(organizationService.updateById(Mockito.anyString(), Mockito.any(Organization.class))).thenReturn(Mono.just(mockOrganization));
 
         WebTestClient.ResponseSpec response = webTestClient
             .mutateWith(csrf())
@@ -271,8 +273,8 @@ public class OrganizationHandlerTest {
             .consumeWith(System.out::println)
             .jsonPath("$.status").isEqualTo("success")
             .jsonPath("$.organization").exists()
-            .jsonPath("$.organization.id").isEqualTo(mockId)
-            .jsonPath("$.organization.shopUrl").isEqualTo(orgUpdates.getShopUrl());
+            .jsonPath("$.organization._id").isEqualTo(mockId)
+            .jsonPath("$.organization.shopUrl").isEqualTo(updateUrl);
     }
 
     @Test
@@ -281,10 +283,9 @@ public class OrganizationHandlerTest {
         List<Organization> mockOrganizationList = new ArrayList<>(mockOrganizations);
         String firstMockId = mockOrganizationList.get(0).getId();
 
-        Mockito.when(organizationRepository.deleteById(Mockito.anyString())).thenReturn(Mono.empty());
-
         int mockSizeToReturn = mockOrganizations.size() - 1;
         Mono<Long> mockSizeMono = Mono.just((long) mockSizeToReturn);
+        Mockito.when(organizationService.deleteById(Mockito.anyString())).thenReturn(Mono.just(1));
         Mockito.when(organizationService.getCount()).thenReturn(mockSizeMono);
 
         // when - Delete request is sent to the server

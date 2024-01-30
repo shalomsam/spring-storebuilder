@@ -69,15 +69,13 @@ public class ProductMockGeneratorService implements MockGeneratorService<Product
         Mono<List<Category>> categoriesMono = mongoTemplate.findAll(Category.class).collectList();
         Flux<Product> productFlux = mongoTemplate.findAll(Product.class);
 
-        categoriesMono.flatMapMany(categories -> {
-            return productFlux.map(product -> {
-                Set<Category> randomCategories = faker.options().subset(1, categories.toArray(new Category[0]));
-                List<String> categoryIds = randomCategories.stream().map(category -> category.getId()).toList();
-                product.setCategoryIds(categoryIds);
-                return product;
-            })
-            .flatMap(mongoTemplate::save);
+        categoriesMono.flatMapMany(categories -> productFlux.map(product -> {
+            Set<Category> randomCategories = faker.options().subset(1, categories.toArray(new Category[0]));
+            List<String> categoryIds = randomCategories.stream().map(Category::getId).toList();
+            product.setCategoryIds(categoryIds);
+            return product;
         })
+        .flatMap(mongoTemplate::save))
         .blockFirst();
     }
 }

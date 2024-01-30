@@ -30,8 +30,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt;
@@ -60,8 +60,11 @@ public class BaseIntegrationTest {
 
     public static final SecurityMockServerConfigurers.JwtMutator AUTHORITIES = mockJwt().authorities(new SimpleGrantedAuthority("user"));
 
-    public static final Consumer<CreateContainerCmd> cmd = e -> e.withPortBindings(new PortBinding(Ports.Binding.bindPort(MONGO_PORT), new ExposedPort(MONGO_PORT)));
+    // public static final Consumer<CreateContainerCmd> cmd = e -> e.withPortBindings(new PortBinding(Ports.Binding.bindPort(MONGO_PORT), new ExposedPort(MONGO_PORT)));
 
+    public static final Consumer<CreateContainerCmd> cmd = e -> Objects.requireNonNull(e.getHostConfig()).withPortBindings(new PortBinding(Ports.Binding.bindPort(MONGO_PORT), new ExposedPort(MONGO_PORT)));
+
+    @SuppressWarnings("resource")
     @Container
     private static final GenericContainer<?> mongoDbContainer = new GenericContainer<>(DockerImageName.parse("mongo:latest"))
             .withAccessToHost(true)
@@ -84,7 +87,7 @@ public class BaseIntegrationTest {
         @Autowired ResourceLoader resourceLoader,
         @Autowired MockGeneratorConfig mockGeneratorConfig,
         @Autowired ReactiveMongoTemplate mongoTemplate
-    ) throws IOException, InterruptedException {
+    ) {
         mongoDbContainer.start();
         mongoDbContainer.waitingFor(
             Wait.forHealthcheck()

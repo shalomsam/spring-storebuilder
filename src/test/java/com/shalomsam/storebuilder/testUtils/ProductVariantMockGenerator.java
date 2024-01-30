@@ -105,23 +105,21 @@ public class ProductVariantMockGenerator implements MockGeneratorService<Product
         Mono<List<Seller>> sellersMono = mongoTemplate.findAll(Seller.class).collectList();
         Flux<ProductVariant> variantFlux = mongoTemplate.findAll(ProductVariant.class);
 
-        sellersMono.flatMapMany(sellers -> {
-           return variantFlux.map(variant -> {
-               Seller randomSeller = faker.options().nextElement(sellers);
-               variant.setSellerId(randomSeller.getId());
-               Mono<Product> product = mongoTemplate.findById(variant.getProductId(), Product.class);
+        sellersMono.flatMapMany(sellers -> variantFlux.map(variant -> {
+            Seller randomSeller = faker.options().nextElement(sellers);
+            variant.setSellerId(randomSeller.getId());
+            Mono<Product> product = mongoTemplate.findById(variant.getProductId(), Product.class);
 
-               return product.zipWith(Mono.just(variant))
-                   .map(tuple -> {
-                       Product product1 = tuple.getT1();
-                       ProductVariant variant1 = tuple.getT2();
-                       variant1.setSku(MockHelper.generateMockSku(variant1, product1, randomSeller));
+            return product.zipWith(Mono.just(variant))
+                .map(tuple -> {
+                    Product product1 = tuple.getT1();
+                    ProductVariant variant1 = tuple.getT2();
+                    variant1.setSku(MockHelper.generateMockSku(variant1, product1, randomSeller));
 
-                       return variant1;
-                   });
-           })
-           .flatMap(mongoTemplate::save);
+                    return variant1;
+                });
         })
+        .flatMap(mongoTemplate::save))
         .blockFirst();
     }
 }

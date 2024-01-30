@@ -41,7 +41,8 @@ public interface MockGeneratorService<T> {
     default void writeMockToJsonFile(Map<String, List<?>> entityMap) throws IOException {
         for (Map.Entry<String, List<?>> entry: entityMap.entrySet()) {
             String entityName = entry.getKey();
-            List<Map> entities = (List<Map>) entry.getValue();
+            //noinspection unchecked,rawtypes
+            var entities = (List<Map>) entry.getValue();
 
             String stubsDirectoryStr = "src/test/resources/stubs";
             Path directoryPath = Paths.get(stubsDirectoryStr);

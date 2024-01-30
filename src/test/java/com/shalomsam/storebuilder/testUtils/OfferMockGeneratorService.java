@@ -63,19 +63,17 @@ public class OfferMockGeneratorService implements MockGeneratorService<Offer> {
         Mono<List<Inventory>> inventoryMono = mongoTemplate.findAll(Inventory.class).collectList();
 
         Mono.zip(variantsMono, sellersMono, inventoryMono)
-            .flatMapMany(tuple -> {
-                return offerFlux.map(offer -> {
-                    ProductVariant randomVariant = faker.options().nextElement(tuple.getT1());
-                    Seller randomSeller = faker.options().nextElement(tuple.getT2());
-                    Inventory randomInventory = faker.options().nextElement(tuple.getT3());
+            .flatMapMany(tuple -> offerFlux.map(offer -> {
+                ProductVariant randomVariant = faker.options().nextElement(tuple.getT1());
+                Seller randomSeller = faker.options().nextElement(tuple.getT2());
+                Inventory randomInventory = faker.options().nextElement(tuple.getT3());
 
-                    offer.setProductVariantId(randomVariant.getId());
-                    offer.setSellerId(randomSeller.getId());
-                    offer.setInventoryId(randomInventory.getId());
-                    return offer;
-                })
-                .flatMap(mongoTemplate::save);
+                offer.setProductVariantId(randomVariant.getId());
+                offer.setSellerId(randomSeller.getId());
+                offer.setInventoryId(randomInventory.getId());
+                return offer;
             })
+            .flatMap(mongoTemplate::save))
             .blockFirst();
     }
 }

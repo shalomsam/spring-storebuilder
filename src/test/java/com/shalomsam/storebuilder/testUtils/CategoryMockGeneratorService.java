@@ -13,10 +13,8 @@ import org.springframework.stereotype.Service;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @Slf4j
@@ -32,8 +30,6 @@ public class CategoryMockGeneratorService implements MockGeneratorService<Catego
     private ReactiveMongoTemplate mongoTemplate;
 
     private final Faker faker = new Faker();
-
-    private final Map<String, Category> cache = new HashMap<>();
 
     @Override
     public String getCollectionName() {

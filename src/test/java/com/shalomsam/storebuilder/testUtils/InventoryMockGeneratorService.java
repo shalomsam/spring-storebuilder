@@ -65,14 +65,12 @@ public class InventoryMockGeneratorService implements MockGeneratorService<Inven
         Mono<List<ProductVariant>> productVariantsMono = mongoTemplate.findAll(ProductVariant.class).collectList();
         Flux<Inventory> inventoryFlux = mongoTemplate.findAll(Inventory.class);
 
-        productVariantsMono.flatMapMany(productVariants -> {
-            return inventoryFlux.map(inventory -> {
-                ProductVariant randomVariant = faker.options().nextElement(productVariants);
-                inventory.setProductVariantId(randomVariant.getId());
-                return inventory;
-            })
-            .flatMap(mongoTemplate::save);
+        productVariantsMono.flatMapMany(productVariants -> inventoryFlux.map(inventory -> {
+            ProductVariant randomVariant = faker.options().nextElement(productVariants);
+            inventory.setProductVariantId(randomVariant.getId());
+            return inventory;
         })
+        .flatMap(mongoTemplate::save))
         .blockFirst();
 
     }

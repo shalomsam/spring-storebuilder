@@ -72,14 +72,12 @@ public class DiscountMockGeneratorService implements MockGeneratorService<Discou
         Mono<List<ProductVariant>> variantListMono = mongoTemplate.findAll(ProductVariant.class).collectList();
         Flux<Discount> discountFlux = mongoTemplate.findAll(Discount.class);
 
-        variantListMono.flatMapMany(variants -> {
-            return discountFlux.map(discount -> {
-                ProductVariant randomVariant = faker.options().nextElement(variants);
-                discount.setProductVariantId(randomVariant.getId());
-                return discount;
-            })
-            .flatMap(mongoTemplate::save);
+        variantListMono.flatMapMany(variants -> discountFlux.map(discount -> {
+            ProductVariant randomVariant = faker.options().nextElement(variants);
+            discount.setProductVariantId(randomVariant.getId());
+            return discount;
         })
+        .flatMap(mongoTemplate::save))
         .blockFirst();
     }
 }
