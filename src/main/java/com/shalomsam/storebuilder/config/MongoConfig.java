@@ -22,13 +22,8 @@ import java.util.Optional;
 
 @Configuration
 @EnableReactiveMongoRepositories(basePackages = { "com.shalomsam.storebuilder.repository" })
-@EnableReactiveMongoAuditing(dateTimeProviderRef = "auditingDateTimeProvider")
+@EnableReactiveMongoAuditing(dateTimeProviderRef = "dateTimeProvider")
 public class MongoConfig {
-
-    @Bean(name = "auditingDateTimeProvider")
-    public DateTimeProvider dateTimeProvider() {
-        return () -> Optional.of(ZonedDateTime.now());
-    }
 
     @Bean
     public ReactiveMongoTransactionManager transactionManager(ReactiveMongoDatabaseFactory reactiveMongoDatabaseFactory) {
@@ -41,6 +36,11 @@ public class MongoConfig {
         converters.add(ZonedDateTimeToDate.INSTANCE);
         converters.add(DateToZonedDateTime.INSTANCE);
         return new MongoCustomConversions(converters);
+    }
+
+    @Bean
+    public DateTimeProvider dateTimeProvider() {
+        return new CustomDateTimeProvider();
     }
 
     @ReadingConverter

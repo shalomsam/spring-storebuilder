@@ -25,7 +25,6 @@ public class OrganizationHandler {
 
     private final DomainService<Organization> organizationService;
 
-
     public OrganizationHandler(DomainService<Organization> organizationService) {
         this.organizationService = organizationService;
     }

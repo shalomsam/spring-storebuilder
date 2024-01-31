@@ -5,11 +5,15 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
 import com.shalomsam.storebuilder.config.JacksonZonedDateTimeConfig;
+import com.shalomsam.storebuilder.config.MongoConfig;
+import com.shalomsam.storebuilder.config.RoutesConfig;
 import com.shalomsam.storebuilder.testUtils.MockGeneratorService;
 import com.shalomsam.storebuilder.testUtils.MockGeneratorConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -20,10 +24,15 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.event.annotation.BeforeTestExecution;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.OutputFrame;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -45,22 +54,28 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * @see MockGeneratorService
  * @author shalomsam
  */
-@Slf4j
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+
+@SpringBootTest
 @AutoConfigureWebTestClient
-@ComponentScan(basePackages = {"com.shalomsam.storebuilder.testUtils"})
 @EnableConfigurationProperties({MockGeneratorConfig.class})
 @Import({JacksonZonedDateTimeConfig.class})
+@ComponentScan(basePackages = {"com.shalomsam.storebuilder.testUtils"})
 @Testcontainers
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class BaseIntegrationTest {
+    @Autowired
+    public WebTestClient webTestClient;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Slf4j.class);
+
 
     public static int MONGO_PORT = 27017;
 
     public static final int MOCK_SIZE = 10;
 
-    public static final SecurityMockServerConfigurers.JwtMutator AUTHORITIES = mockJwt().authorities(new SimpleGrantedAuthority("user"));
+    public static final Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(LOGGER);
 
-    // public static final Consumer<CreateContainerCmd> cmd = e -> e.withPortBindings(new PortBinding(Ports.Binding.bindPort(MONGO_PORT), new ExposedPort(MONGO_PORT)));
+    public static final SecurityMockServerConfigurers.JwtMutator AUTHORITIES = mockJwt().authorities(new SimpleGrantedAuthority("user"));
 
     public static final Consumer<CreateContainerCmd> cmd = e -> Objects.requireNonNull(e.getHostConfig()).withPortBindings(new PortBinding(Ports.Binding.bindPort(MONGO_PORT), new ExposedPort(MONGO_PORT)));
 
@@ -88,6 +103,7 @@ public class BaseIntegrationTest {
         @Autowired MockGeneratorConfig mockGeneratorConfig,
         @Autowired ReactiveMongoTemplate mongoTemplate
     ) {
+        mongoDbContainer.followOutput(logConsumer, OutputFrame.OutputType.STDERR);
         mongoDbContainer.start();
         mongoDbContainer.waitingFor(
             Wait.forHealthcheck()
@@ -110,7 +126,7 @@ public class BaseIntegrationTest {
 
     @AfterAll
     public static void tearDown(){
-        mongoDbContainer.close();
-        mongoDbContainer.stop();
+        // mongoDbContainer.close();
+        // mongoDbContainer.stop();
     }
 }
