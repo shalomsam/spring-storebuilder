@@ -2,10 +2,10 @@ package com.shalomsam.storebuilder.controller;
 
 import com.shalomsam.storebuilder.config.JacksonZonedDateTimeConfig;
 import com.shalomsam.storebuilder.config.RoutesConfig;
-import com.shalomsam.storebuilder.domain.AuditMetadata;
-import com.shalomsam.storebuilder.domain.Organization;
-import com.shalomsam.storebuilder.domain.user.Address;
-import com.shalomsam.storebuilder.domain.user.ContactInfo;
+import com.shalomsam.storebuilder.model.BaseDocument;
+import com.shalomsam.storebuilder.model.Organization;
+import com.shalomsam.storebuilder.model.user.Address;
+import com.shalomsam.storebuilder.model.user.ContactInfo;
 import com.shalomsam.storebuilder.repository.OrganizationRepository;
 import com.shalomsam.storebuilder.service.OrganizationServiceImpl;
 import com.shalomsam.storebuilder.testUtils.OrganizationMockGeneratorService;
@@ -200,10 +200,11 @@ public class OrganizationHandlerTest {
         ObjectId mockId = new ObjectId();
         acmeCorpClone.setId(mockId.toString());
 
-        AuditMetadata auditMetadata = new AuditMetadata();
+        BaseDocument auditMetadata = new BaseDocument();
         ZonedDateTime mockCreatedAt = ZonedDateTime.now();
         auditMetadata.setCreatedAt(mockCreatedAt);
-        acmeCorpClone.setAuditMetadata(auditMetadata);
+        //acmeCorpClone.setAuditMetadata(auditMetadata);
+        acmeCorpClone.setCreatedAt(auditMetadata.getCreatedAt());
         Mockito.when(organizationService.create(Mockito.any(Organization.class))).thenReturn(Mono.just(acmeCorpClone));
 
         // when - client makes a request with new acmeCorporation json body

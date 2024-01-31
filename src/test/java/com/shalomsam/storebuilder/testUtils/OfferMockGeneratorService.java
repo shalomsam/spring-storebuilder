@@ -1,11 +1,11 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shalomsam.storebuilder.domain.shop.Inventory;
-import com.shalomsam.storebuilder.domain.shop.Offer;
-import com.shalomsam.storebuilder.domain.shop.OfferStatus;
-import com.shalomsam.storebuilder.domain.shop.ProductVariant;
-import com.shalomsam.storebuilder.domain.shop.Seller;
+import com.shalomsam.storebuilder.model.shop.Inventory;
+import com.shalomsam.storebuilder.model.shop.Offer;
+import com.shalomsam.storebuilder.model.shop.OfferStatus;
+import com.shalomsam.storebuilder.model.shop.ProductVariant;
+import com.shalomsam.storebuilder.model.shop.Seller;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;

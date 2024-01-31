@@ -2,7 +2,7 @@ package com.shalomsam.storebuilder.controller;
 
 
 import com.shalomsam.storebuilder.config.RoutesConfig;
-import com.shalomsam.storebuilder.domain.Organization;
+import com.shalomsam.storebuilder.model.Organization;
 import com.shalomsam.storebuilder.dto.ApiResponse;
 import com.shalomsam.storebuilder.dto.ErrorResponseDto;
 import com.shalomsam.storebuilder.dto.SuccessResponseDto;

@@ -1,8 +1,8 @@
 package com.shalomsam.storebuilder.testUtils;
 
-import com.shalomsam.storebuilder.domain.Organization;
-import com.shalomsam.storebuilder.domain.user.Address;
-import com.shalomsam.storebuilder.domain.user.ContactInfo;
+import com.shalomsam.storebuilder.model.Organization;
+import com.shalomsam.storebuilder.model.user.Address;
+import com.shalomsam.storebuilder.model.user.ContactInfo;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
@@ -59,7 +59,8 @@ public class OrganizationMockGeneratorService implements MockGeneratorService<Or
                         .addresses(companyLocations)
                         .build()
                 )
-                .auditMetadata(MockHelper.generateMockAuditMetadata())
+                //.auditMetadata(MockHelper.generateMockAuditMetadata())
+                .createdAt(MockHelper.generateMockAuditMetadata().getCreatedAt())
                 .build();
 
             organizations.add(organization);

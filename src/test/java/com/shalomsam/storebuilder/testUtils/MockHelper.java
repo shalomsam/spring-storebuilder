@@ -1,11 +1,11 @@
 package com.shalomsam.storebuilder.testUtils;
 
-import com.shalomsam.storebuilder.domain.AuditMetadata;
-import com.shalomsam.storebuilder.domain.shop.Product;
-import com.shalomsam.storebuilder.domain.shop.ProductVariant;
-import com.shalomsam.storebuilder.domain.shop.Seller;
-import com.shalomsam.storebuilder.domain.shop.StockLocation;
-import com.shalomsam.storebuilder.domain.user.Address;
+import com.shalomsam.storebuilder.model.BaseDocument;
+import com.shalomsam.storebuilder.model.shop.Product;
+import com.shalomsam.storebuilder.model.shop.ProductVariant;
+import com.shalomsam.storebuilder.model.shop.Seller;
+import com.shalomsam.storebuilder.model.shop.StockLocation;
+import com.shalomsam.storebuilder.model.user.Address;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
 
@@ -28,7 +28,7 @@ public final class MockHelper {
         return slug.toLowerCase();
     }
 
-    public static AuditMetadata generateMockAuditMetadata() {
+    public static BaseDocument generateMockAuditMetadata() {
         Faker faker = new Faker();
         ZonedDateTime createdAt = ZonedDateTime.of(
             faker
@@ -40,7 +40,7 @@ public final class MockHelper {
             ZoneId.systemDefault()
         );
         ZonedDateTime updatedAt = ZonedDateTime.now(ZoneId.of("UTC"));
-        AuditMetadata auditMetadata = new AuditMetadata();
+        BaseDocument auditMetadata = new BaseDocument();
         auditMetadata.setUpdatedAt(updatedAt);
         auditMetadata.setCreatedAt(createdAt);
 

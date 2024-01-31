@@ -1,7 +1,7 @@
 package com.shalomsam.storebuilder.service;
 
-import com.shalomsam.storebuilder.domain.shop.Cart;
-import com.shalomsam.storebuilder.domain.user.Customer;
+import com.shalomsam.storebuilder.model.shop.Cart;
+import com.shalomsam.storebuilder.model.user.Customer;
 import com.shalomsam.storebuilder.repository.CartRepository;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;

@@ -1,8 +1,8 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shalomsam.storebuilder.domain.SeoMetaData;
-import com.shalomsam.storebuilder.domain.shop.Category;
+import com.shalomsam.storebuilder.model.SeoMetaData;
+import com.shalomsam.storebuilder.model.shop.Category;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;

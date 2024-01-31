@@ -1,7 +1,7 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shalomsam.storebuilder.domain.shop.*;
+import com.shalomsam.storebuilder.model.shop.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

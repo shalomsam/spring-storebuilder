@@ -1,9 +1,9 @@
 package com.shalomsam.storebuilder.service;
 
-import com.shalomsam.storebuilder.domain.paymentmethods.PaymentMethod;
-import com.shalomsam.storebuilder.domain.shop.Order;
-import com.shalomsam.storebuilder.domain.shop.Transaction;
-import com.shalomsam.storebuilder.domain.user.Customer;
+import com.shalomsam.storebuilder.model.paymentmethods.PaymentMethod;
+import com.shalomsam.storebuilder.model.shop.Order;
+import com.shalomsam.storebuilder.model.shop.Transaction;
+import com.shalomsam.storebuilder.model.user.Customer;
 import com.shalomsam.storebuilder.repository.TransactionRepository;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;

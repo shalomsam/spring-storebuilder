@@ -1,11 +1,11 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shalomsam.storebuilder.domain.shop.Cart;
-import com.shalomsam.storebuilder.domain.shop.CartItem;
-import com.shalomsam.storebuilder.domain.shop.CartStatus;
-import com.shalomsam.storebuilder.domain.shop.ProductVariant;
-import com.shalomsam.storebuilder.domain.user.Customer;
+import com.shalomsam.storebuilder.model.shop.Cart;
+import com.shalomsam.storebuilder.model.shop.CartItem;
+import com.shalomsam.storebuilder.model.shop.CartStatus;
+import com.shalomsam.storebuilder.model.shop.ProductVariant;
+import com.shalomsam.storebuilder.model.user.Customer;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
@@ -50,7 +50,8 @@ public class CartMockGeneratorService implements MockGeneratorService<Cart> {
                 Cart.builder()
                     .id(new ObjectId().toString())
                     .cartStatus(faker.options().option(CartStatus.class))
-                    .auditMetadata(MockHelper.generateMockAuditMetadata())
+                    //.auditMetadata(MockHelper.generateMockAuditMetadata())
+                    .createdAt(MockHelper.generateMockAuditMetadata().getCreatedAt())
                     .build()
             );
         }

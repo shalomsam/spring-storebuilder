@@ -1,9 +1,9 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shalomsam.storebuilder.domain.Organization;
-import com.shalomsam.storebuilder.domain.user.Customer;
-import com.shalomsam.storebuilder.domain.user.CustomerAccess;
+import com.shalomsam.storebuilder.model.Organization;
+import com.shalomsam.storebuilder.model.user.Customer;
+import com.shalomsam.storebuilder.model.user.CustomerAccess;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;

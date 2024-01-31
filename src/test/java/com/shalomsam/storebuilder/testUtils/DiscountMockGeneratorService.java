@@ -1,8 +1,8 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shalomsam.storebuilder.domain.shop.Discount;
-import com.shalomsam.storebuilder.domain.shop.ProductVariant;
+import com.shalomsam.storebuilder.model.shop.Discount;
+import com.shalomsam.storebuilder.model.shop.ProductVariant;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
@@ -52,7 +52,8 @@ public class DiscountMockGeneratorService implements MockGeneratorService<Discou
                 .description(faker.lorem().sentence())
                 .startDateTime(ZonedDateTime.of(faker.date().past(1, TimeUnit.DAYS).toLocalDateTime(), ZoneId.systemDefault()))
                 .endDateTime(ZonedDateTime.of(faker.date().future(1, TimeUnit.DAYS).toLocalDateTime(), ZoneId.systemDefault()))
-                .auditMetadata(MockHelper.generateMockAuditMetadata())
+                .createdAt(MockHelper.generateMockAuditMetadata().getCreatedAt())
+                //.auditMetadata(MockHelper.generateMockAuditMetadata())
                 .build();
 
             if (faker.bool().bool()) {

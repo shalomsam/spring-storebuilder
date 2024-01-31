@@ -1,8 +1,7 @@
 package com.shalomsam.storebuilder.service;
 
-import com.shalomsam.storebuilder.domain.shop.Cart;
-import com.shalomsam.storebuilder.domain.shop.Discount;
-import com.shalomsam.storebuilder.domain.shop.ProductVariant;
+import com.shalomsam.storebuilder.model.shop.Discount;
+import com.shalomsam.storebuilder.model.shop.ProductVariant;
 import com.shalomsam.storebuilder.repository.DiscountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;

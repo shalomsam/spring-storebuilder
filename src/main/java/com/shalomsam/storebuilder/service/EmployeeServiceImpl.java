@@ -1,10 +1,8 @@
 package com.shalomsam.storebuilder.service;
 
-import com.shalomsam.storebuilder.domain.Organization;
-import com.shalomsam.storebuilder.domain.shop.Discount;
-import com.shalomsam.storebuilder.domain.user.Address;
-import com.shalomsam.storebuilder.domain.user.Employee;
-import com.shalomsam.storebuilder.domain.user.EmployeeAddress;
+import com.shalomsam.storebuilder.model.Organization;
+import com.shalomsam.storebuilder.model.user.Employee;
+import com.shalomsam.storebuilder.model.user.EmployeeAddress;
 import com.shalomsam.storebuilder.repository.EmployeeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;

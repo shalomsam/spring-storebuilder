@@ -1,11 +1,11 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shalomsam.storebuilder.domain.Organization;
-import com.shalomsam.storebuilder.domain.shop.Seller;
-import com.shalomsam.storebuilder.domain.shop.SellerType;
-import com.shalomsam.storebuilder.domain.user.Address;
-import com.shalomsam.storebuilder.domain.user.ContactInfo;
+import com.shalomsam.storebuilder.model.Organization;
+import com.shalomsam.storebuilder.model.shop.Seller;
+import com.shalomsam.storebuilder.model.shop.SellerType;
+import com.shalomsam.storebuilder.model.user.Address;
+import com.shalomsam.storebuilder.model.user.ContactInfo;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +59,8 @@ public class SellerMockGeneratorService implements MockGeneratorService<Seller> 
                         .addresses(addresses)
                         .build()
                 )
-                .auditMetadata(MockHelper.generateMockAuditMetadata())
+                //.auditMetadata(MockHelper.generateMockAuditMetadata())
+                .createdAt(MockHelper.generateMockAuditMetadata().getCreatedAt())
                 .build();
 
             sellers.add(seller);

@@ -1,9 +1,9 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shalomsam.storebuilder.domain.shop.Inventory;
-import com.shalomsam.storebuilder.domain.shop.ProductVariant;
-import com.shalomsam.storebuilder.domain.shop.StockLocation;
+import com.shalomsam.storebuilder.model.shop.Inventory;
+import com.shalomsam.storebuilder.model.shop.ProductVariant;
+import com.shalomsam.storebuilder.model.shop.StockLocation;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
@@ -52,7 +52,8 @@ public class InventoryMockGeneratorService implements MockGeneratorService<Inven
                 .id(new ObjectId().toString())
                 .stockCount(faker.number().numberBetween(10, 2000))
                 .stockLocationId(stockLocation.getId())
-                .auditMetadata(MockHelper.generateMockAuditMetadata())
+                //.auditMetadata(MockHelper.generateMockAuditMetadata())
+                .createdAt(MockHelper.generateMockAuditMetadata().getCreatedAt())
                 .build();
             inventories.add(inventory);
         }

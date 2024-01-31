@@ -1,9 +1,8 @@
 package com.shalomsam.storebuilder.service;
 
-import com.shalomsam.storebuilder.domain.shop.Category;
-import com.shalomsam.storebuilder.domain.shop.Inventory;
-import com.shalomsam.storebuilder.domain.shop.Product;
-import com.shalomsam.storebuilder.domain.shop.ProductVariant;
+import com.shalomsam.storebuilder.model.shop.Category;
+import com.shalomsam.storebuilder.model.shop.Product;
+import com.shalomsam.storebuilder.model.shop.ProductVariant;
 import com.shalomsam.storebuilder.repository.ProductRepository;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;

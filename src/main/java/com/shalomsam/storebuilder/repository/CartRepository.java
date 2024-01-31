@@ -1,6 +1,6 @@
 package com.shalomsam.storebuilder.repository;
 
-import com.shalomsam.storebuilder.domain.shop.Cart;
+import com.shalomsam.storebuilder.model.shop.Cart;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;

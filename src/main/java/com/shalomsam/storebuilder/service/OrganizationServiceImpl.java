@@ -1,7 +1,6 @@
 package com.shalomsam.storebuilder.service;
 
-import com.shalomsam.storebuilder.domain.Organization;
-import com.shalomsam.storebuilder.domain.shop.Inventory;
+import com.shalomsam.storebuilder.model.Organization;
 import com.shalomsam.storebuilder.repository.OrganizationRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;

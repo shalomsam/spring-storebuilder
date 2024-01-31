@@ -2,21 +2,16 @@ package com.shalomsam.storebuilder.controller;
 
 import com.shalomsam.storebuilder.BaseIntegrationTest;
 import com.shalomsam.storebuilder.config.RoutesConfig;
-import com.shalomsam.storebuilder.domain.AuditMetadata;
-import com.shalomsam.storebuilder.domain.Organization;
-import com.shalomsam.storebuilder.domain.user.Address;
-import com.shalomsam.storebuilder.domain.user.ContactInfo;
+import com.shalomsam.storebuilder.model.Organization;
+import com.shalomsam.storebuilder.model.user.Address;
+import com.shalomsam.storebuilder.model.user.ContactInfo;
 import com.shalomsam.storebuilder.service.DomainService;
-import org.bson.types.ObjectId;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.testcontainers.shaded.org.apache.commons.lang3.SerializationUtils;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,7 +104,7 @@ public class OrganizationHandlerIntegrationTest extends BaseIntegrationTest {
             .jsonPath("$.message").isEqualTo(HttpStatus.NOT_FOUND.getReasonPhrase());
     }
 
-    @Ignore
+    @Test
     public void createOrganizationWithValidDataShouldCreateAndReturnNewOrg() {
         // given - new Organization to add
         List<Address> addressList = new ArrayList<>();
@@ -159,6 +154,6 @@ public class OrganizationHandlerIntegrationTest extends BaseIntegrationTest {
             .jsonPath("$.status").isEqualTo("success")
             .jsonPath("$.organization").exists()
             .jsonPath("$.organization._id").exists()
-            .jsonPath("$.organization.auditMetadata.createdAt").exists();
+            .jsonPath("$.organization.createdAt").exists();
     }
 }

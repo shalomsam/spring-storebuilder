@@ -1,8 +1,8 @@
 package com.shalomsam.storebuilder.testUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shalomsam.storebuilder.domain.shop.Category;
-import com.shalomsam.storebuilder.domain.shop.Product;
+import com.shalomsam.storebuilder.model.shop.Category;
+import com.shalomsam.storebuilder.model.shop.Product;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
@@ -53,7 +53,8 @@ public class ProductMockGeneratorService implements MockGeneratorService<Product
                 .modelName(modelName)
                 .title(String.format("%s - %s", brand, modelName))
                 .description(faker.lorem().characters(200))
-                .auditMetadata(MockHelper.generateMockAuditMetadata())
+                .createdAt(MockHelper.generateMockAddress().getCreatedAt())
+                //.auditMetadata(MockHelper.generateMockAuditMetadata())
                 .build();
 
             // generate mock variants for each mock product
