@@ -70,7 +70,7 @@ public class ProductServiceImpl implements DomainService<Product> {
 
         // will invoke set, push or pop depending on the updateType value
         Method updateMethod = Update.class.getMethod(updateType.getDisplayName());
-        updateMethod.invoke(update, categories);
+        updateMethod.invoke(update, categories.toArray());
 
         return mongoTemplate.findAndModify(
             query,

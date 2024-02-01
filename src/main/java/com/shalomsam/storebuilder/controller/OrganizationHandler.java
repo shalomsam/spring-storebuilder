@@ -145,15 +145,17 @@ public class OrganizationHandler {
 
         return organizationService.deleteById(id)
             .then(
-                ServerResponse
-                    .ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(
-                        new SuccessResponseDto<>()
-                            .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
-                            .addData("deleted", id)
-                            .addData("count", organizationService.getCount().block())
-                    )
+                organizationService.getCount().flatMap(count ->
+                    ServerResponse
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(
+                            new SuccessResponseDto<>()
+                                .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
+                                .addData("deleted", id)
+                                .addData("count", count)
+                        )
+                )
             )
             .switchIfEmpty(
                 ServerResponse

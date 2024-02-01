@@ -45,7 +45,7 @@ public class OfferMockGeneratorService implements MockGeneratorService<Offer> {
             Offer offer = Offer.builder()
                 .id(new ObjectId().toString())
                 .offerStatus(faker.options().option(OfferStatus.class))
-                .auditMetadata(MockHelper.generateMockAuditMetadata())
+                .createdAt(MockHelper.generateMockAuditMetadata().getCreatedAt())
                 .build();
 
             offers.add(offer);

@@ -21,10 +21,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
@@ -239,13 +236,6 @@ public class OrganizationHandlerTest {
         Organization mockOrganization = mockOrganizations.get(0);
         mockOrganization.setShopUrl(updateUrl);
         String mockId = mockOrganization.getId();
-
-        Mockito.when(reactiveMongoTemplate.findAndModify(
-                ArgumentMatchers.any(Query.class),
-                ArgumentMatchers.any(Update.class),
-                ArgumentMatchers.any(FindAndModifyOptions.class),
-                ArgumentMatchers.<Class<Organization>>any()))
-            .thenReturn(Mono.just(mockOrganization));
 
         // when - new updates are send via request body
         Organization orgUpdates = Organization.builder()

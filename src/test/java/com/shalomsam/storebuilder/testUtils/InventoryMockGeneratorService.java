@@ -3,7 +3,7 @@ package com.shalomsam.storebuilder.testUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shalomsam.storebuilder.model.shop.Inventory;
 import com.shalomsam.storebuilder.model.shop.ProductVariant;
-import com.shalomsam.storebuilder.model.shop.StockLocation;
+import com.shalomsam.storebuilder.model.user.PersistableAddress;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
@@ -45,14 +45,13 @@ public class InventoryMockGeneratorService implements MockGeneratorService<Inven
         List<Inventory> inventories = new ArrayList<>();
 
         for (int i = 0; i < size; i++) {
-            StockLocation stockLocation = MockHelper.generateMockStockLocation();
+            PersistableAddress stockLocation = MockHelper.generateMockStockLocation();
             mongoTemplate.save(stockLocation);
 
             Inventory inventory = Inventory.builder()
                 .id(new ObjectId().toString())
                 .stockCount(faker.number().numberBetween(10, 2000))
                 .stockLocationId(stockLocation.getId())
-                //.auditMetadata(MockHelper.generateMockAuditMetadata())
                 .createdAt(MockHelper.generateMockAuditMetadata().getCreatedAt())
                 .build();
             inventories.add(inventory);

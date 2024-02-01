@@ -14,6 +14,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.csrf;
@@ -23,8 +24,11 @@ public class OrganizationHandlerIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private DomainService<Organization> organizationDomainService;
 
+    private Organization firstOrg;
+    private Organization lastOrg;
+
     @Test
-    public void getAllOrganizationReturnsListOfOrgJson() {
+    public void testGetAllOrganizationReturnsListOfOrgJson() {
         // given - mock organization is loaded into the mongodb container
 
         // when - client/browser performs GET request on /api/v1/organization endpoint
@@ -50,10 +54,10 @@ public class OrganizationHandlerIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void getOrganizationByIdShouldReturnSpecificOrganization() {
+    public void testGetOrganizationByIdShouldReturnSpecificOrganization() {
         // given - mock organization is loaded into the mongodb container
-        List<Organization> organizations = organizationDomainService.getAll().collectList().block();
-        String firstId = organizations.get(0).getId();
+        Organization firstOrg = getFirstOrg();
+        String firstId = firstOrg.getId();
 
         // when - client/browser performs GET request on /api/v1/organization/{id} endpoint
         WebTestClient.ResponseSpec response = webTestClient
@@ -74,11 +78,11 @@ public class OrganizationHandlerIntegrationTest extends BaseIntegrationTest {
             .expectBody()
             .consumeWith(System.out::println)
             .jsonPath("$.status").isEqualTo("success")
-            .jsonPath("$.organization", organizations.get(0));
+            .jsonPath("$.organization", firstOrg);
     }
 
     @Test
-    public void getOrganizationWithInvalidIdShouldReturnNotFound() {
+    public void testGetOrganizationWithInvalidIdShouldReturnNotFound() {
         // given - mock organization is loaded into the mongodb container
         String invalidId = "InvalidId";
 
@@ -105,7 +109,7 @@ public class OrganizationHandlerIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void createOrganizationWithValidDataShouldCreateAndReturnNewOrg() {
+    public void testCreateOrganizationWithValidDataShouldCreateAndReturnNewOrg() {
         // given - new Organization to add
         List<Address> addressList = new ArrayList<>();
         addressList.add(
@@ -154,6 +158,100 @@ public class OrganizationHandlerIntegrationTest extends BaseIntegrationTest {
             .jsonPath("$.status").isEqualTo("success")
             .jsonPath("$.organization").exists()
             .jsonPath("$.organization._id").exists()
-            .jsonPath("$.organization.createdAt").exists();
+            .jsonPath("$.organization.createdAt").exists()
+            .jsonPath("$.organization.name").isEqualTo(acmeCorporation.getName())
+            .jsonPath("$.organization.shopUrl").isEqualTo(acmeCorporation.getShopUrl())
+            .jsonPath("$.organization.contactInfo").isEqualTo(acmeCorporation.getContactInfo())
+            .jsonPath("$.organization.contactInfo.addresses.[0]").isEqualTo(addressList.get(0));
+    }
+
+    @Test
+    public void testUpdateOrganizationByIdReturnsUpdatedOrganization() {
+        // given - mock organization is loaded into the mongodb container
+        String updateUrl = "http://newUrl.com";
+        Organization firstOrg = getFirstOrg();
+        String firstId = firstOrg.getId();
+
+        Organization orgPartialUpdate = Organization.builder()
+            .shopUrl(updateUrl)
+            .build();
+
+        // when - new updates are send via request body
+        WebTestClient.ResponseSpec response = webTestClient
+            .mutateWith(csrf())
+            .mutateWith(AUTHORITIES)
+            .put()
+            .uri(uriBuilder -> uriBuilder
+                .path(RoutesConfig.OrganizationPath + "/" + firstId)
+                .build()
+            )
+            .accept(MediaType.APPLICATION_JSON)
+            .bodyValue(orgPartialUpdate)
+            .exchange();
+
+        // then - should return updated organization
+        response
+            .expectStatus()
+            .isOk()
+            .expectBody()
+            .consumeWith(System.out::println)
+            .jsonPath("$.status").isEqualTo("success")
+            .jsonPath("$.organization").exists()
+            .jsonPath("$.organization._id").isEqualTo(firstId)
+            .jsonPath("$.organization.shopUrl").isEqualTo(updateUrl);
+
+    }
+
+    @Test
+    public void testDeleteOrganizationByIdDeletesOrg() {
+        // given - organization exists
+        int countBeforeDelete = Objects.requireNonNull(organizationDomainService.getCount().block()).intValue();
+        Organization lastOrg = getLastOrg();
+        String lastOrgId = lastOrg.getId();
+
+        // when - Delete request is sent to the server
+        WebTestClient.ResponseSpec response = webTestClient
+            .mutateWith(csrf())
+            .mutateWith(AUTHORITIES)
+            .delete()
+            .uri(uriBuilder -> uriBuilder
+                .path(RoutesConfig.OrganizationPath + "/" + lastOrgId)
+                .build()
+            )
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange();
+
+        // then - delete should be called with correct ID and return
+        response
+            .expectStatus()
+            .isOk()
+            .expectBody()
+            .consumeWith(System.out::println)
+            .jsonPath("$.status").isEqualTo("success")
+            .jsonPath("$.deleted").isEqualTo(lastOrgId)
+            .jsonPath("$.count").isEqualTo(countBeforeDelete - 1);
+
+
+    }
+
+
+    private Organization getFirstOrg() {
+        if (firstOrg == null) {
+            List<Organization> organizations = organizationDomainService.getAll().collectList().block();
+            firstOrg = organizations.get(0);
+            lastOrg = organizations.get(organizations.size() - 1);
+        }
+
+        return firstOrg;
+    }
+
+    private Organization getLastOrg() {
+        if (lastOrg == null) {
+            List<Organization> organizations = organizationDomainService.getAll().collectList().block();
+            firstOrg = organizations.get(0);
+            lastOrg = organizations.get(organizations.size() - 1);
+        }
+
+        return lastOrg;
     }
 }

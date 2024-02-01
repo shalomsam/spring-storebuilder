@@ -1,7 +1,7 @@
 package com.shalomsam.storebuilder.model.user;
 
-
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -9,5 +9,4 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @SuperBuilder
 @Document(collection = "employeeAddresses")
-public class EmployeeAddress extends Address {
-}
+public class EmployeeAddress extends PersistableAddress {}

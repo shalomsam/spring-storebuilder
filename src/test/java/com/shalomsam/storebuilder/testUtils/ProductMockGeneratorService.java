@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -53,8 +55,7 @@ public class ProductMockGeneratorService implements MockGeneratorService<Product
                 .modelName(modelName)
                 .title(String.format("%s - %s", brand, modelName))
                 .description(faker.lorem().characters(200))
-                .createdAt(MockHelper.generateMockAddress().getCreatedAt())
-                //.auditMetadata(MockHelper.generateMockAuditMetadata())
+                .createdAt(MockHelper.generateMockAuditMetadata().getCreatedAt())
                 .build();
 
             // generate mock variants for each mock product
