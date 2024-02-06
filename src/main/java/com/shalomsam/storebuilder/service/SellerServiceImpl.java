@@ -1,9 +1,9 @@
 package com.shalomsam.storebuilder.service;
 
 import com.shalomsam.storebuilder.model.Organization;
-import com.shalomsam.storebuilder.model.shop.Offer;
 import com.shalomsam.storebuilder.model.shop.Seller;
 import com.shalomsam.storebuilder.repository.SellerRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class SellerServiceImpl implements DomainService<Seller> {
 
@@ -29,7 +30,12 @@ public class SellerServiceImpl implements DomainService<Seller> {
 
     @Override
     public Flux<Seller> getAll() {
-        return repository.findAll().flatMap(this::zipWithRelatedEntities);
+        return repository.findAll()
+            .flatMap(this::zipWithRelatedEntities)
+            .onErrorResume(e -> {
+                log.error("Error processing sellers: ", e);
+                return Flux.empty();
+            });
     }
 
     @Override
@@ -85,16 +91,14 @@ public class SellerServiceImpl implements DomainService<Seller> {
     }
 
     private Mono<Seller> zipWithRelatedEntities(Seller seller) {
-        Mono<Organization> orgMono = mongoTemplate.findById(seller.getOrganizationId(), Organization.class);
-        Flux<Offer> offerFlux = mongoTemplate.find(
-            Query.query(Criteria.where("sellerId").is(seller.getId())),
-            Offer.class
-        );
+        Mono<Organization> orgMono = mongoTemplate.findById(seller.getOrganizationId(), Organization.class).defaultIfEmpty(Organization.builder().build());
 
-        return Mono.zip(orgMono, offerFlux.collectList(), (org, offers) -> {
-            seller.setOrganization(org);
-            seller.setOffers(offers);
+        return orgMono.map(organization -> {
+            seller.setOrganization(organization);
             return seller;
+        }).onErrorResume(e -> {
+            log.error("Error enriching seller: {}, orgId: {} ", seller.getId(), seller.getOrganizationId(), e);
+            return Mono.just(seller);
         });
     }
 }

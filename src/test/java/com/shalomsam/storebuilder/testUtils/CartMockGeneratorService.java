@@ -75,7 +75,8 @@ public class CartMockGeneratorService implements MockGeneratorService<Cart> {
                    .map(cart -> buildCartRelationShips(cart, customers, productVariants))
                    .flatMap(mongoTemplate::save);
             })
-            .blockFirst();
+            .collectList()
+            .block();
     }
 
     private Cart buildCartRelationShips(Cart cart, List<Customer> customers, List<ProductVariant> productVariants) {

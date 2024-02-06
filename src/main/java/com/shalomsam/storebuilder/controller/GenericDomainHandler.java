@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +26,7 @@ public class GenericDomainHandler<T> {
 
     private Optional<DomainService<T>> getDomainService(String entityName) {
         try {
-            String domainServiceName = String.format("{%s}ServiceImpl", entityName.toUpperCase());
+            String domainServiceName = String.format("com.shalomsam.storebuilder.service.%sServiceImpl", entityName.substring(0, 1).toUpperCase() + entityName.substring(1));
             @SuppressWarnings("unchecked")
             Class<DomainService<T>> clazz = (Class<DomainService<T>>) Class.forName(domainServiceName);
             return domainServices.stream().filter(clazz::isInstance).findFirst();
@@ -39,19 +38,17 @@ public class GenericDomainHandler<T> {
     public HandlerFunction<ServerResponse> getAll(String domainServiceName) {
         Optional<DomainService<T>> domainService = this.getDomainService(domainServiceName);
         return request -> domainService
-            .orElseGet(() -> (DomainService<T>) Mono.empty())
+            .orElseThrow(() -> new RuntimeException("DomainService Not Found"))
             .getAll()
             .collectList()
-            .flatMap(entity -> {
-                return ServerResponse
-                    .ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(
-                        new SuccessResponseDto<List<T>>()
-                            .addData(domainServiceName, entity)
-                            .status("success")
-                    );
-            })
+            .flatMap(entity -> ServerResponse
+                .ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(
+                    new SuccessResponseDto<List<T>>()
+                        .addData(domainServiceName, entity)
+                        .status("success")
+                ))
             .switchIfEmpty(
                 ServerResponse
                     .status(HttpStatus.NOT_FOUND)

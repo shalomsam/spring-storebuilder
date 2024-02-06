@@ -3,7 +3,6 @@ package com.shalomsam.storebuilder.testUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shalomsam.storebuilder.model.shop.Inventory;
 import com.shalomsam.storebuilder.model.shop.ProductVariant;
-import com.shalomsam.storebuilder.model.user.PersistableAddress;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
@@ -26,7 +25,7 @@ public class InventoryMockGeneratorService implements MockGeneratorService<Inven
     public ObjectMapper objectMapper;
 
     @Autowired
-    public ReactiveMongoTemplate mongoTemplate;
+    private StockLocationGeneratorService stockLocationGeneratorService;
 
     private final Faker faker = new Faker();
 
@@ -45,15 +44,17 @@ public class InventoryMockGeneratorService implements MockGeneratorService<Inven
         List<Inventory> inventories = new ArrayList<>();
 
         for (int i = 0; i < size; i++) {
-            PersistableAddress stockLocation = MockHelper.generateMockStockLocation();
-            mongoTemplate.save(stockLocation);
-
             Inventory inventory = Inventory.builder()
                 .id(new ObjectId().toString())
                 .stockCount(faker.number().numberBetween(10, 2000))
-                .stockLocationId(stockLocation.getId())
                 .createdAt(MockHelper.generateMockAuditMetadata().getCreatedAt())
                 .build();
+
+            // supports only one location to an inventory listing
+            inventory.setStockLocationId(
+                stockLocationGeneratorService.generateMock(inventory).getId()
+            );
+
             inventories.add(inventory);
         }
 
@@ -65,13 +66,13 @@ public class InventoryMockGeneratorService implements MockGeneratorService<Inven
         Mono<List<ProductVariant>> productVariantsMono = mongoTemplate.findAll(ProductVariant.class).collectList();
         Flux<Inventory> inventoryFlux = mongoTemplate.findAll(Inventory.class);
 
-        productVariantsMono.flatMapMany(productVariants -> inventoryFlux.map(inventory -> {
+        inventoryFlux.flatMap(inventory -> productVariantsMono.flatMapMany(productVariants -> {
             ProductVariant randomVariant = faker.options().nextElement(productVariants);
             inventory.setProductVariantId(randomVariant.getId());
-            return inventory;
+            return Mono.just(inventory);
         })
         .flatMap(mongoTemplate::save))
-        .blockFirst();
-
+        .collectList()
+        .block();
     }
 }

@@ -1,6 +1,6 @@
 package com.shalomsam.storebuilder.controller;
 
-import com.shalomsam.storebuilder.config.JacksonZonedDateTimeConfig;
+import com.shalomsam.storebuilder.config.JacksonConfig;
 import com.shalomsam.storebuilder.config.RoutesConfig;
 import com.shalomsam.storebuilder.model.BaseDocument;
 import com.shalomsam.storebuilder.model.Organization;
@@ -43,7 +43,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 @SpringBootTest
 @AutoConfigureWebTestClient
 @EnableAutoConfiguration(exclude = {MongoAutoConfiguration.class})
-@Import({JacksonZonedDateTimeConfig.class, RoutesConfig.class, OrganizationMockGeneratorService.class})
+@Import({JacksonConfig.class, RoutesConfig.class, OrganizationMockGeneratorService.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class OrganizationHandlerTest {

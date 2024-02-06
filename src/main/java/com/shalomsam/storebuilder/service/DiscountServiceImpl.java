@@ -17,13 +17,13 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class DiscountServiceImp implements DomainService<Discount> {
+public class DiscountServiceImpl implements DomainService<Discount> {
 
     private final DiscountRepository repository;
 
     private final ReactiveMongoTemplate mongoTemplate;
 
-    public DiscountServiceImp(DiscountRepository repository, ReactiveMongoTemplate mongoTemplate) {
+    public DiscountServiceImpl(DiscountRepository repository, ReactiveMongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
     }

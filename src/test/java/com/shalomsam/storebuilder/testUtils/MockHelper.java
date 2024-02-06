@@ -6,7 +6,6 @@ import com.shalomsam.storebuilder.model.shop.ProductVariant;
 import com.shalomsam.storebuilder.model.shop.Seller;
 import com.shalomsam.storebuilder.model.shop.StockLocation;
 import com.shalomsam.storebuilder.model.user.Address;
-import com.shalomsam.storebuilder.model.user.PersistableAddress;
 import net.datafaker.Faker;
 import org.bson.types.ObjectId;
 
@@ -64,7 +63,7 @@ public final class MockHelper {
             .build();
     }
 
-    public static PersistableAddress generateMockStockLocation() {
+    public static StockLocation generateMockStockLocation() {
         Faker faker = new Faker();
         String state = faker.address().stateAbbr();
 

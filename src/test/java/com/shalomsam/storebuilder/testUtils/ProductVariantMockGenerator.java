@@ -120,6 +120,7 @@ public class ProductVariantMockGenerator implements MockGeneratorService<Product
                 });
         })
         .flatMap(mongoTemplate::save))
-        .blockFirst();
+        .collectList()
+        .block();
     }
 }

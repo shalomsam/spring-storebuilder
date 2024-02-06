@@ -90,10 +90,16 @@ public class InventoryServiceImpl implements DomainService<Inventory> {
         Mono<ProductVariant> productVariantMono = mongoTemplate.findById(inventory.getProductVariantId(), ProductVariant.class);
         Mono<StockLocation> stockLocationMono = mongoTemplate.findById(inventory.getStockLocationId(), StockLocation.class);
 
-        return Mono.zip(productVariantMono, stockLocationMono, (p, s) -> {
-            inventory.setProductVariant(p);
-            inventory.setStockLocation(s);
-            return inventory;
-        });
+        return Mono.zip(productVariantMono, stockLocationMono)
+            .map(tuple -> {
+                inventory.setProductVariant(tuple.getT1());
+                inventory.setStockLocation(tuple.getT2());
+                return inventory;
+            })
+            .flatMap(mongoTemplate::save)
+            .onErrorResume(e -> {
+                log.error("Error enriching inventory: {} -", inventory, e);
+                return Mono.just(inventory);
+            });
     }
 }

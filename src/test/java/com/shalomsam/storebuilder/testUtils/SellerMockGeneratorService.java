@@ -59,7 +59,6 @@ public class SellerMockGeneratorService implements MockGeneratorService<Seller> 
                         .addresses(addresses)
                         .build()
                 )
-                //.auditMetadata(MockHelper.generateMockAuditMetadata())
                 .createdAt(MockHelper.generateMockAuditMetadata().getCreatedAt())
                 .build();
 
@@ -74,12 +73,13 @@ public class SellerMockGeneratorService implements MockGeneratorService<Seller> 
         Flux<Seller> sellerFlux = mongoTemplate.findAll(Seller.class);
         Mono<List<Organization>> organizationsMono = mongoTemplate.findAll(Organization.class).collectList();
 
-        organizationsMono.flatMapMany(organizations -> sellerFlux.map(seller -> {
+        sellerFlux.flatMap(seller -> organizationsMono.flatMapMany(organizations -> {
             Organization randomOrg = faker.options().nextElement(organizations);
             seller.setOrganizationId(randomOrg.getId());
-            return seller;
+            return Mono.just(seller);
         })
         .flatMap(mongoTemplate::save))
-        .blockFirst();
+        .collectList()
+        .block();
     }
 }

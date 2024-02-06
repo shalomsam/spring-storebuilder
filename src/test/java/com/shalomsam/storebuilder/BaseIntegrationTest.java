@@ -4,9 +4,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
-import com.shalomsam.storebuilder.config.JacksonZonedDateTimeConfig;
-import com.shalomsam.storebuilder.config.MongoConfig;
-import com.shalomsam.storebuilder.config.RoutesConfig;
+import com.shalomsam.storebuilder.config.JacksonConfig;
 import com.shalomsam.storebuilder.testUtils.MockGeneratorService;
 import com.shalomsam.storebuilder.testUtils.MockGeneratorConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +25,6 @@ import org.springframework.security.test.web.reactive.server.SecurityMockServerC
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.event.annotation.BeforeTestExecution;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
@@ -58,7 +55,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 @SpringBootTest
 @AutoConfigureWebTestClient
 @EnableConfigurationProperties({MockGeneratorConfig.class})
-@Import({JacksonZonedDateTimeConfig.class})
+@Import({JacksonConfig.class})
 @ComponentScan(basePackages = {"com.shalomsam.storebuilder.testUtils"})
 @Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)

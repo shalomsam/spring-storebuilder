@@ -29,7 +29,7 @@ public class Category extends BaseDocument {
     private String nameSlug;
 
     @Builder.Default
-    private boolean isActive = false;
+    private Boolean isActive = false;
 
     private String imageUrl;
 
