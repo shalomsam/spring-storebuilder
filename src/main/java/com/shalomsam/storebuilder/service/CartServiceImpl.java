@@ -3,6 +3,7 @@ package com.shalomsam.storebuilder.service;
 import com.shalomsam.storebuilder.model.shop.Cart;
 import com.shalomsam.storebuilder.model.user.Customer;
 import com.shalomsam.storebuilder.repository.CartRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -14,6 +15,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class CartServiceImpl implements DomainService<Cart> {
 
@@ -86,6 +88,10 @@ public class CartServiceImpl implements DomainService<Cart> {
                 cart.setCustomer(customer);
                 return cart;
             }
-        );
+        )
+        .onErrorResume(e -> {
+            log.error("Error enriching cart: {}. Error - ", cart, e);
+            return Mono.just(cart);
+        });
     }
 }

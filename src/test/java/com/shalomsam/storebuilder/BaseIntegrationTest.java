@@ -8,7 +8,6 @@ import com.shalomsam.storebuilder.config.JacksonConfig;
 import com.shalomsam.storebuilder.testUtils.MockGeneratorService;
 import com.shalomsam.storebuilder.testUtils.MockGeneratorConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,15 +25,12 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
 import java.util.List;
 import java.util.Objects;
@@ -52,12 +48,12 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * @author shalomsam
  */
 
+@Testcontainers
 @SpringBootTest
 @AutoConfigureWebTestClient
 @EnableConfigurationProperties({MockGeneratorConfig.class})
 @Import({JacksonConfig.class})
 @ComponentScan(basePackages = {"com.shalomsam.storebuilder.testUtils"})
-@Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class BaseIntegrationTest {
     @Autowired
@@ -77,21 +73,15 @@ public class BaseIntegrationTest {
     public static final Consumer<CreateContainerCmd> cmd = e -> Objects.requireNonNull(e.getHostConfig()).withPortBindings(new PortBinding(Ports.Binding.bindPort(MONGO_PORT), new ExposedPort(MONGO_PORT)));
 
     @SuppressWarnings("resource")
-    @Container
     private static final GenericContainer<?> mongoDbContainer = new GenericContainer<>(DockerImageName.parse("mongo:latest"))
             .withAccessToHost(true)
             .withExposedPorts(MONGO_PORT)
             .withCreateContainerCmdModifier(cmd)
-            .withEnv("MONGO_INIT_DATABASE", "storebuilder-test")
-            .withFileSystemBind(
-                    MountableFile.forHostPath("src/test/resources/stubs/").getResolvedPath(),
-                    "/stubs/",
-                    BindMode.READ_WRITE
-            )
-            .withCopyFileToContainer(
-                    MountableFile.forClasspathResource("mongoInit.sh"),
-                    "/"
-            );
+            .withEnv("MONGO_INIT_DATABASE", "storebuilder-test");
+
+    static {
+        mongoDbContainer.start();
+    }
 
     @BeforeAll
     public static void setUp(
@@ -101,7 +91,6 @@ public class BaseIntegrationTest {
         @Autowired ReactiveMongoTemplate mongoTemplate
     ) {
         mongoDbContainer.followOutput(logConsumer, OutputFrame.OutputType.STDERR);
-        mongoDbContainer.start();
         mongoDbContainer.waitingFor(
             Wait.forHealthcheck()
         );
@@ -116,14 +105,8 @@ public class BaseIntegrationTest {
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.mongodb.host", mongoDbContainer::getHost);
-        registry.add("spring.data.mongodb.port", () -> mongoDbContainer.getMappedPort(MONGO_PORT));
+        registry.add("spring.data.mongodb.port", () -> MONGO_PORT);
         registry.add("spring.data.mongodb.database", () -> "storebuilder-test");
-        registry.add("spring.data.mongodb.uri", () -> String.format("mongodb://%s:%s/%s", mongoDbContainer.getHost(), mongoDbContainer.getMappedPort(MONGO_PORT), "storebuilder-test"));
-    }
-
-    @AfterAll
-    public static void tearDown(){
-        // mongoDbContainer.close();
-        // mongoDbContainer.stop();
+        registry.add("spring.data.mongodb.uri", () -> String.format("mongodb://%s:%s/%s", mongoDbContainer.getHost(), MONGO_PORT, "storebuilder-test"));
     }
 }

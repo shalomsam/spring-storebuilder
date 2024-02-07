@@ -31,4 +31,5 @@ jobs:
       run: |
         echo "ls -al >> "
         ls -al
+        cp .testcontainers.properties ~/.testcontainers.properties
         mvn verify -Psurefire
