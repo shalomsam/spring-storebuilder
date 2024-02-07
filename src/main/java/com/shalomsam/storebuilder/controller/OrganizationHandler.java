@@ -2,7 +2,7 @@ package com.shalomsam.storebuilder.controller;
 
 
 import com.shalomsam.storebuilder.config.RoutesConfig;
-import com.shalomsam.storebuilder.domain.Organization;
+import com.shalomsam.storebuilder.model.Organization;
 import com.shalomsam.storebuilder.dto.ApiResponse;
 import com.shalomsam.storebuilder.dto.ErrorResponseDto;
 import com.shalomsam.storebuilder.dto.SuccessResponseDto;
@@ -25,23 +25,20 @@ public class OrganizationHandler {
 
     private final DomainService<Organization> organizationService;
 
-
     public OrganizationHandler(DomainService<Organization> organizationService) {
         this.organizationService = organizationService;
     }
 
     public Mono<ServerResponse> getAll(ServerRequest ignoredServerRequest) {
         log.info("OrganizationHandler getAll method called.");
-        return organizationService.getAll().collectList().flatMap(organizations -> {
-            return ServerResponse
-                .ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(
-                    new SuccessResponseDto<List<Organization>>()
-                        .addData("organizations", organizations)
-                        .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
-                );
-        });
+        return organizationService.getAll().collectList().flatMap(organizations -> ServerResponse
+            .ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(
+                new SuccessResponseDto<List<Organization>>()
+                    .addData("organizations", organizations)
+                    .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
+            ));
     }
 
     public Mono<ServerResponse> getById(ServerRequest serverRequest) {
@@ -106,10 +103,17 @@ public class OrganizationHandler {
         String id = request.pathVariable("id");
         return request
             .bodyToMono(Organization.class)
-            .flatMap(reqOrg -> {
-                Mono<Organization> updatedOrgMono = organizationService.updateById(id, reqOrg);
-                log.debug("updatedOrgMono : {} ", updatedOrgMono);
-                return updatedOrgMono;
+            .flatMap(reqOrg -> organizationService.updateById(id, reqOrg))
+            .doOnSuccess(organization -> log.info("New Organization updated: {}", organization))
+            .doOnError(e -> {
+                log.error("Failed to update organization record: message={}", e.getMessage());
+                ServerResponse
+                    .status(HttpStatusCode.valueOf(500))
+                    .bodyValue(
+                        new ErrorResponseDto()
+                            .status(ApiResponse.ApiResponseType.ERROR.getValue())
+                            .setMessage(e.getMessage())
+                    );
             })
             .flatMap(organization ->
                 {
@@ -141,15 +145,17 @@ public class OrganizationHandler {
 
         return organizationService.deleteById(id)
             .then(
-                ServerResponse
-                    .ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(
-                        new SuccessResponseDto<>()
-                            .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
-                            .addData("deleted", id)
-                            .addData("count", organizationService.getCount().block())
-                    )
+                organizationService.getCount().flatMap(count ->
+                    ServerResponse
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(
+                            new SuccessResponseDto<>()
+                                .status(ApiResponse.ApiResponseType.SUCCESS.getValue())
+                                .addData("deleted", id)
+                                .addData("count", count)
+                        )
+                )
             )
             .switchIfEmpty(
                 ServerResponse

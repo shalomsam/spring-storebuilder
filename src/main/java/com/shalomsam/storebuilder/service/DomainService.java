@@ -17,5 +17,7 @@ public interface DomainService<T> {
 
     Mono<Integer> deleteById(String id);
 
+    Mono<Integer> deleteManyById(List<String> ids);
+
     Mono<Long> getCount();
 }
